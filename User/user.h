@@ -7,15 +7,18 @@
 class User{
     private:
         static ID count;
-        const ID id;
+        ID id;
         char username[USERNAME_LENGTH_LIMIT];
         char master_password[PASSWORD_LENGTH_LIMIT];
         char email[EMAIL_LENGTH_LIMIT];
         char plan; // F: Free, B; Basic, P: Premium
+        bool is_deleted = false;
         
     
     public:
-        //A constructor and a desctructor
+        //A constructor including copy one and a desctructor
+        User();
+        User(User& user);
         User(char[USERNAME_LENGTH_LIMIT], char[PASSWORD_LENGTH_LIMIT], char[EMAIL_LENGTH_LIMIT]);
 
         ~User();
@@ -58,6 +61,13 @@ class User{
 
         void rename_organisation(ID target_organisation);
         void delete_organisation(ID target_organisation);
+
+        // Interaction with database
+        friend class Database;
+        // Overloading of << operator function
+        friend std::ostream& operator<<(std::ostream& os, const User& user);
+        bool isReal();
+        bool confirmMasterPassword(char password[PASSWORD_LENGTH_LIMIT]);
 };
 
 

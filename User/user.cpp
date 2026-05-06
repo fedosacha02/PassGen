@@ -1,18 +1,24 @@
+#pragma once
+
 #include "user.h"
 #include <iostream>
+#include "../Database/database.cpp"
+#include "../Functions/functions.cpp"
 
 // Static ID initialisation
 ID User::count = 0;
 
+User::User(): id{count++}, username{"unknown"}, master_password{"unknown"}, email{"unknown"}{}
 
-void assign(char* in, char* out){
-    char c = in[0];
-    for (size_t i = 0; c != '\0'; i++)
-    {
-        c = in[i];
-        out[i] = c;
-    }
+User::User(User& user){
+    id = user.id;
+    assign(user.username, username);
+    assign(user.master_password, master_password);
+    assign(user.email, email);
+    plan = user.plan;
+
 }
+
 User::User(char username[USERNAME_LENGTH_LIMIT], char master_password[PASSWORD_LENGTH_LIMIT], char email[EMAIL_LENGTH_LIMIT]): id{count++}{
     assign(username, this->username);
     assign(master_password, this->master_password);
@@ -21,5 +27,19 @@ User::User(char username[USERNAME_LENGTH_LIMIT], char master_password[PASSWORD_L
 }
 
 User::~User(){
-    std::cout << "The user " << username << master_password << email << " was deleted \n";
+    std::cout << "The user " << username << " was deleted \n";
+}
+
+
+std::ostream& operator<<(std::ostream& os, const User& user) {
+    os << user.id << ", " << user.username << ", " << user.master_password << ", " << user.email << ", " << user.is_deleted << '\n';
+    return os; // Return the stream for chaining
+}
+
+bool User::isReal(){
+    std::cout << username;
+    return (username == "unknown")? false: true; 
+}
+bool User::confirmMasterPassword(char password[PASSWORD_LENGTH_LIMIT]){
+    return compare_strings(master_password, password);
 }

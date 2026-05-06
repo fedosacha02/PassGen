@@ -1,0 +1,95 @@
+#pragma once
+
+#include <iostream>
+#include <fstream>
+#include "database.h"
+#include "../User/user.h"
+#include "../Functions/functions.cpp"
+
+// Opening the database schema
+Database::Database():  
+    users("Data/users.bin", std::ios::in | std::ios::out | std::ios::binary), 
+    passwords("Data/passwords.bin", std::ios::in | std::ios::out | std::ios::binary),
+    groups("Data/groups.bin", std::ios::in | std::ios::out | std::ios::binary),
+    organisations("Data/organisations.bin", std::ios::in | std::ios::out | std::ios::binary),
+    password_sharings_to_group("Data/password_sharings_to_group.bin", std::ios::in | std::ios::out | std::ios::binary),
+    password_sharings_to_organisation("Data/password_sharings_to_organisation.bin", std::ios::in | std::ios::out | std::ios::binary){}
+
+
+Database::~Database(){
+    users.close();
+    passwords.close();
+    groups.close();
+    organisations.close();
+    password_sharings_to_group.close();
+    password_sharings_to_organisation.close();
+
+    std::cout << "The database has been closed.\n";
+}
+template <typename T> void Database::createEntry(T obj, std::fstream& db){
+    if(db){
+        db.write((char*)&obj, sizeof(T));
+        std::cout << "The entry was created successfully\n";
+    } 
+    else std::cout << "Something with the database went wrong.\n";
+};
+
+
+bool Database::searchUserEntry(char username[USERNAME_LENGTH_LIMIT], User& user){
+    
+    if(users){
+        users.seekg(0, users.beg);
+
+        while (users.read((char*)&user, sizeof(User))){
+            if(user.is_deleted) continue;
+            std::cout << user.username << '\n';
+            if(compare_strings(user.username,username)){
+                std::cout << "The user has been found\n" << user << '\n';
+                // Reset the stream's error state flags
+                users.clear();
+                return true;
+            }
+        }
+        // Reset the stream's error state flags
+        users.clear();
+        std::cout << "The found user " << username << " has NOT been found\n";
+        return false; 
+    }
+    else std::cout << "Something with the database went wrong.\n";
+    return false; 
+};
+template <typename T>void Database::markAsDeleted(ID id, std::fstream& db){
+    T obj;
+    if(db){
+        db.seekg(0, db.beg);
+        db.seekp(0, db.beg);
+        while(db.read((char*)&obj, sizeof(T))){
+            if(obj.is_deleted) continue;
+            if(obj.id == id){
+                obj.is_deleted = true;
+                db.seekp(-sizeof(T), std::ios::cur);
+                db.write((char*)&obj, sizeof(T));
+                std::cout << "The user was marked as deleted successfully\n";
+                break;
+            }
+        }
+        // Reset the stream's error state flags
+        db.clear();
+    
+    }
+    else std::cout << "Something with the database went wrong.\n";
+    
+}
+template<typename T> void Database::outputAllEntries(std::fstream& db){
+    T obj;
+    if(db){
+        db.seekg(0, db.beg);
+        while(db.read((char*)&obj, sizeof(T))){
+            std::cout << obj;
+        }
+
+        // Reset the stream's error state flags
+        db.clear();
+    }
+    else std::cout << "Something with the database went wrong.\n";
+}
