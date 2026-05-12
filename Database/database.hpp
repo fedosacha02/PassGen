@@ -1,11 +1,11 @@
 #pragma once
 
 #include <fstream>
-#include "../User/user.h"
-#include "../Group/group.h"
-#include "../Organisation/organisation.h"
-#include "../Password/password.h"
-#include "../Password/password_sharing.h"
+#include "../User/user.hpp"
+#include "../Group/group.hpp"
+#include "../Organisation/organisation.hpp"
+#include "../Password/password.hpp"
+#include "../Password/password_sharing.hpp"
 
 // Flat File Database 
 struct Database{

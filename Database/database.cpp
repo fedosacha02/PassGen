@@ -2,8 +2,8 @@
 
 #include <iostream>
 #include <fstream>
-#include "database.h"
-#include "../User/user.h"
+#include "database.hpp"
+#include "../User/user.hpp"
 #include "../Functions/functions.cpp"
 
 // Opening the database schema

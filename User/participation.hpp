@@ -1,4 +1,4 @@
-#include "../config.h"
+#include "../config.hpp"
 
 class Participation{
     private:

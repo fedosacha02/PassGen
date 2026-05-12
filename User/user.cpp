@@ -1,8 +1,7 @@
 #pragma once
 
-#include "user.h"
+#include "user.hpp"
 #include <iostream>
-#include "../Database/database.cpp"
 #include "../Functions/functions.cpp"
 
 // Static ID initialisation
@@ -10,8 +9,7 @@ ID User::count = 0;
 
 User::User(): id{count++}, username{"unknown"}, master_password{"unknown"}, email{"unknown"}{}
 
-User::User(User& user){
-    id = user.id;
+User::User(User& user): id{user.id}{
     assign(user.username, username);
     assign(user.master_password, master_password);
     assign(user.email, email);

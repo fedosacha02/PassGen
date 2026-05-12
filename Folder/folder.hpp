@@ -1,4 +1,4 @@
-#include "../config.h"
+#include "../config.hpp"
 
 class Folder{
     char name[NAME_LENGTH_LIMIT];

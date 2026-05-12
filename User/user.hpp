@@ -1,13 +1,13 @@
 #pragma once 
 
-#include "../config.h"
+#include "../config.hpp"
 
 
 
 class User{
     private:
         static ID count;
-        ID id;
+        const ID id;
         char username[USERNAME_LENGTH_LIMIT];
         char master_password[PASSWORD_LENGTH_LIMIT];
         char email[EMAIL_LENGTH_LIMIT];
