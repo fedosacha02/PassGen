@@ -1,5 +1,4 @@
 #pragma once
-
 #include <iostream>
 
 void assign(char* from, char* to){
