@@ -43,16 +43,19 @@ int main(){
     }
     std::cout << "You have logged in successfully!\n";
     std::cout << "-------------------------------------------------------\n";
-    std::cout << "CREATING A PASSWORD";
+    std::cout << "CREATING A PASSWORD\n";
+    std::cout << "-------------------------------------------------------\n";
     char password_name[NAME_LENGTH_LIMIT];
     char value[PASSWORD_LENGTH_LIMIT];
     bool is_blocked;
-    std::cout << "Please, enter the name of a new password: ";
+    Password password;
+    /*std::cout << "Please, enter the name of a new password: ";
     std::cin >> password_name;
     std::cout << "Please, enter the value of the new password: ";
     std::cin >> value;
-    std::cout << "Please, specify if the passwords is blocked";
+    std::cout << "Please, specify if the password is blocked: ";
     std::cin >> is_blocked;
-    
+    database.createEntry<Password>(password, database.passwords);*/
+    //database.outputAllEntries<Password>(database.passwords);
     return 0;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 
-void assign(char* from, char* to){
+void assign(const char* from, char* to){
     char c = from[0];
     for (size_t i = 0; c != '\0'; i++)
     {

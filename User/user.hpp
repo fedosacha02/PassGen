@@ -1,8 +1,8 @@
 #pragma once 
 
 #include "../config.hpp"
-
-
+#include "../Password/password.hpp"
+#include "../Database/database.hpp"
 
 class User{
     private:
@@ -16,7 +16,7 @@ class User{
         
     
     public:
-        //A constructor including copy one and a desctructor
+        // Constructors including a copy one and a desctructor
         User();
         User(User& user);
         User(char[USERNAME_LENGTH_LIMIT], char[PASSWORD_LENGTH_LIMIT], char[EMAIL_LENGTH_LIMIT]);
@@ -62,8 +62,12 @@ class User{
         void rename_organisation(ID target_organisation);
         void delete_organisation(ID target_organisation);
 
-        // Interaction with database
-        friend class Database;
+        // The interaction with database
+        friend Database;
+
+        // The interaction with passwords
+        friend Password;
+        
         // Overloading of << operator function
         friend std::ostream& operator<<(std::ostream& os, const User& user);
         bool isReal();
