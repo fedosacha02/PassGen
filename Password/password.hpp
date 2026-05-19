@@ -16,8 +16,8 @@ class Password{
     public:
         Password();
         Password(Password&);
-        Password(User* user, const char* name, const char* value, bool is_blocked = false);
-        friend std::ostream& operator<<(std::ostream& os, const Password& password);
+        Password(const User* user, const char* name, const char* value, bool is_blocked = false);
+        friend std::ostream& operator<<(std::ostream& os, const Password* password);
         ~Password();
        
         

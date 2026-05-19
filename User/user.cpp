@@ -29,8 +29,8 @@ User::~User(){
 }
 
 
-std::ostream& operator<<(std::ostream& os, const User& user) {
-    os << user.id << ", " << user.username << ", " << user.master_password << ", " << user.email << ", " << user.is_deleted << '\n';
+std::ostream& operator<<(std::ostream& os, const User* user) {
+    os << user->id << ", " << user->username << ", " << user->master_password << ", " << user->email << ", " << user->is_deleted << '\n';
     return os; // Return the stream for chaining
 }
 

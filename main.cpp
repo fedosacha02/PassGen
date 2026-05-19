@@ -48,14 +48,14 @@ int main(){
     char password_name[NAME_LENGTH_LIMIT];
     char value[PASSWORD_LENGTH_LIMIT];
     bool is_blocked;
-    Password password;
+    
     /*std::cout << "Please, enter the name of a new password: ";
     std::cin >> password_name;
     std::cout << "Please, enter the value of the new password: ";
     std::cin >> value;
     std::cout << "Please, specify if the password is blocked: ";
     std::cin >> is_blocked;
-    database.createEntry<Password>(password, database.passwords);*/
-    //database.outputAllEntries<Password>(database.passwords);
+    Password password(&user, password_name, value, is_blocked);*/
+    database.outputAllEntries<Password>(database.passwords);
     return 0;
 }

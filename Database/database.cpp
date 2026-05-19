@@ -6,6 +6,7 @@
 #include "../User/user.hpp"
 #include "../Functions/functions.cpp"
 
+
 // Opening the database schema
 Database::Database():  
     users("Data/users.bin", std::ios::in | std::ios::out | std::ios::binary), 
@@ -43,8 +44,8 @@ bool Database::searchUserEntry(char username[USERNAME_LENGTH_LIMIT], User& user)
         while (users.read((char*)&user, sizeof(User))){
             if(user.is_deleted) continue;
             std::cout << user.username << '\n';
-            if(compare_strings(user.username,username)){
-                std::cout << "The user has been found\n" << user << '\n';
+            if(compare_strings(user.username, username)){
+                std::cout << "The user has been found\n" << &user << '\n';
                 // Reset the stream's error state flags
                 users.clear();
                 return true;
@@ -85,7 +86,7 @@ template<typename T> void Database::outputAllEntries(std::fstream& db){
     if(db){
         db.seekg(0, db.beg);
         while(db.read((char*)&obj, sizeof(T))){
-            std::cout << obj;
+            std::cout << &obj << '\n';
         }
 
         // Reset the stream's error state flags

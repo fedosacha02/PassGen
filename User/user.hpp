@@ -69,7 +69,7 @@ class User{
         friend Password;
         
         // Overloading of << operator function
-        friend std::ostream& operator<<(std::ostream& os, const User& user);
+        friend std::ostream& operator<<(std::ostream& os, const User* user);
         bool isReal();
         bool confirmMasterPassword(char password[PASSWORD_LENGTH_LIMIT]);
 };
