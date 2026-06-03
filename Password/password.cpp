@@ -20,10 +20,11 @@ Password::Password(Password& password): id{password.id}, owner_id{password.owner
 }
 
 // A constructor
-Password::Password(const User* user, const char* name, const char* value, bool is_blocked): id(count++), owner_id(user->id){
+Password::Password(const User* user, const char name[NAME_LENGTH_LIMIT], const char value[PASSWORD_LENGTH_LIMIT], bool is_blocked, ID folder_id): id{count++}, owner_id{user->id}{
     assign(name, this->name);
     assign(value, this->value);
     this->is_blocked = is_blocked;
+    this->folder_id = folder_id;
     std::cout << this << '\n';
 }
 

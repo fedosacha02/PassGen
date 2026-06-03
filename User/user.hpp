@@ -23,7 +23,7 @@ class User{
 
         ~User();
         // As an ordinal user
-        void create_user_password(char name[NAME_LENGTH_LIMIT], bool is_blocked);
+        void create_user_password(const char name[NAME_LENGTH_LIMIT], const char value[PASSWORD_LENGTH_LIMIT], Database* db, bool is_blocked = false);
         void rename_password(ID password_id);
         void folder_user_password(ID password_id, ID folder_id);
         void create_group(char name[NAME_LENGTH_LIMIT]);

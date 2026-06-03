@@ -3,9 +3,16 @@
 #include "User/user.cpp"
 #include "Database/database.cpp"
 #include "Password/password.cpp"
+#include "HTTP/server.cpp"
 
 int main(){
-    
+    Server server(8080);
+    struct sockaddr_in client_addr;
+    socklen_t client_addr_size;
+    int s_fd;
+    s_fd = server.server_socket_fd;
+    client_addr_size = sizeof(struct sockaddr_in);
+
     /*char username1[USERNAME_LENGTH_LIMIT] = "fedosacha02";
     char master_password1[PASSWORD_LENGTH_LIMIT] = "psd2024";
     char email1[EMAIL_LENGTH_LIMIT] = "fedosacha02@gmail.com";
@@ -49,13 +56,15 @@ int main(){
     char value[PASSWORD_LENGTH_LIMIT];
     bool is_blocked;
     
-    /*std::cout << "Please, enter the name of a new password: ";
+    std::cout << "Please, enter the name of a new password: ";
     std::cin >> password_name;
     std::cout << "Please, enter the value of the new password: ";
     std::cin >> value;
     std::cout << "Please, specify if the password is blocked: ";
     std::cin >> is_blocked;
-    Password password(&user, password_name, value, is_blocked);*/
-    database.outputAllEntries<Password>(database.passwords);
+    user.create_user_password(password_name, value, &database, is_blocked);
+    //database.outputAllEntries<Password>(database.passwords);
+
+
     return 0;
 }

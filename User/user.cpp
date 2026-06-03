@@ -3,6 +3,8 @@
 #include "user.hpp"
 #include <iostream>
 #include "../Functions/functions.cpp"
+#include "../Password/password.hpp"
+#include "../Database/database.hpp"
 
 // Static ID initialisation
 ID User::count = 0;
@@ -40,4 +42,11 @@ bool User::isReal(){
 }
 bool User::confirmMasterPassword(char password[PASSWORD_LENGTH_LIMIT]){
     return compare_strings(master_password, password);
+}
+
+void User::create_user_password(const char name[NAME_LENGTH_LIMIT], const char value[PASSWORD_LENGTH_LIMIT], Database* db, bool is_blocked){
+    db->createEntry<Password>(Password(this, name, value, is_blocked, 0), db->passwords);
+}
+void User::rename_password(ID password_id){
+    
 }

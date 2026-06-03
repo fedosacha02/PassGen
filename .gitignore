@@ -1,0 +1,7 @@
+# ignore all files in any directories named postman, .vscode and .postman 
+postman/
+.vscode/
+.postman/
+
+# only ignore the main file in the current directory, not subdir/main
+/main

@@ -19,7 +19,8 @@
         3. has 12 shared password maximum (3 x 4 = 12)
 */
 
-
+// The HTTP Server
+#define PORT 8080
 
 // The constraints for the Free Plan
 
