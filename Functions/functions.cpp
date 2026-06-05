@@ -10,7 +10,7 @@ void assign(const char* from, char* to){
     }
 }
 
-bool compare_strings(char* str1, char* str2){
+bool compare_strings(const char* str1, const char* str2){
     char a = str1[0];
     char b = str2[0];
     if(a != b) return false;
