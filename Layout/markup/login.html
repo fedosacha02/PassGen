@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація</title>
+    <!--<link rel="stylesheet" href="styles.css">-->
+</head>
+<body>
+    <header>
+        <!-- <img src="../media/logotype.svg" alt="Logo">-->
+        <h1>PassGen</h1>
+    </header>
+    <main>
+        
+        <h2>Щойно почнемо!</h2>
+        <div id="switch">
+            <button><strong>Увійти</strong></button>
+            <button class="disabled"><strong>Зареєструватися</strong></button>
+        </div>
+
+        <div>
+            <form method="post" id="log">
+                <input type="email" name="email" id="email" placeholder="f*****@gmail.com">
+                <input type="password" id="pass" name="password" minlength="8" required placeholder="********">
+                <button form="log"><strong>Увійти</strong></button>
+            </form>
+            <h2>Забули пароль?</h2>
+            <button><strong>Скинути</strong></button>
+        </div>
+        
+        <form method="post" id="reg" style="display: none;">
+            <input type="email" name="email" id="email" placeholder="f*****@gmail.com">
+            <input type="password" id="pass" name="password" minlength="8" required placeholder="********">
+            <input type="password" id="r_pass" name="repeat_password" minlength="8" required placeholder="********">
+            <button form="reg"><strong>Зареєструватися</strong></button>
+        </form>
+    </main>
+</body>
+<script>
+    const buttons = document.querySelectorAll("main > div#switch > button");
+    const forms = document.querySelectorAll("main form");
+
+    buttons[0].addEventListener("click", (event) => {
+        buttons[0].classList.remove("disabled");
+        buttons[1].classList.add("disabled");
+        forms[0].parentElement.style.display = "flex";
+        forms[1].style.display = "none";
+    })
+    buttons[1].addEventListener("click", (event) => {
+        buttons[1].classList.remove("disabled");
+        buttons[0].classList.add("disabled");
+        forms[0].parentElement.style.display = "none";
+        forms[1].style.display = "flex";
+    });
+</script>
+
+</html>
