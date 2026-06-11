@@ -434,42 +434,110 @@ int start(Database& database){
                     std::cout << "Sending login.html...\n"; 
                     send_file(ssl, "../Layout/markup/login.html", 200, "text/html");
                 }
-                else if(compare_strings(path, (const char*)"/styles/styles.css")){
-                    std::cout << "Sending styles.css...\n"; 
-                    send_file(ssl, "../Layout/styles/styles.css", 200, "text/css");
+                else if(compare_strings(path, (const char*)"/home")){
+                    std::cout << "Sending home.html...\n"; 
+                    send_file(ssl, "../Layout/markup/home.html", 200, "text/html");
                 }
-                else if(compare_strings(path, (const char*)"/media/logotype.svg")){
-                    std::cout << "Sending logotype.svg...\n"; 
-                    send_file(ssl, "../Layout/media/logotype.svg", 200, "image/svg+xml");
+                else if(compare_strings(path, (const char*)"/passwords")){
+                    std::cout << "Sending passwords.html...\n"; 
+                    send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
+                }
+                else if(compare_strings(path, (const char*)"/groups")){
+                    std::cout << "Sending groups.html...\n"; 
+                    send_file(ssl, "../Layout/markup/groups.html", 200, "text/html");
+                }
+                else if(compare_strings(path, (const char*)"/organisations")){
+                    std::cout << "Sending organisations.html...\n"; 
+                    send_file(ssl, "../Layout/markup/organisations.html", 200, "text/html");
+                }
+                else if(compare_strings(path, (const char*)"/settings")){
+                    std::cout << "Sending settings.html...\n"; 
+                    send_file(ssl, "../Layout/markup/settings.html", 200, "text/html");
+                }
+
+
+                else if(compare_strings(path, (const char*)"/styles/login.css")){
+                    std::cout << "Sending /styles/login.css...\n"; 
+                    send_file(ssl, "../Layout/styles/login.css", 200, "text/css");
                 }
                 else if(compare_strings(path, (const char*)"/styles/not_found.css")){
                     std::cout << "Sending not_found.css...\n"; 
                     send_file(ssl, "../Layout/styles/not_found.css", 200, "text/css");
                 }
+                else if(compare_strings(path, (const char*)"/styles/home.css")){
+                    std::cout << "Sending /styles/home.css...\n"; 
+                    send_file(ssl, "../Layout/styles/home.css", 200, "text/css");
+                }
                 else if(compare_strings(path, (const char*)"/styles/passwords.css")){
-                    std::cout << "Sending passwords.css...\n"; 
+                    std::cout << "Sending /styles/passwords.css...\n"; 
                     send_file(ssl, "../Layout/styles/passwords.css", 200, "text/css");
+                }
+                else if(compare_strings(path, (const char*)"/styles/groups.css")){
+                    std::cout << "Sending /styles/groups.css...\n"; 
+                    send_file(ssl, "../Layout/styles/groups.css", 200, "text/css");
+                }
+                else if(compare_strings(path, (const char*)"/styles/organisations.css")){
+                    std::cout << "Sending /styles/organisations.css...\n"; 
+                    send_file(ssl, "../Layout/styles/organisations.css", 200, "text/css");
+                }
+                else if(compare_strings(path, (const char*)"/styles/settings.css")){
+                    std::cout << "Sending /styles/settings.css...\n"; 
+                    send_file(ssl, "../Layout/styles/settings.css", 200, "text/css");
+                }
+
+
+                else if(compare_strings(path, (const char*)"/media/logotype.svg")){
+                    std::cout << "Sending logotype.svg...\n"; 
+                    send_file(ssl, "../Layout/media/logotype.svg", 200, "image/svg+xml");
+                }
+                else if(compare_strings(path, (const char*)"/media/voice_chat_icon.svg")){
+                    std::cout << "Sending /media/voice_chat_icon.svg...\n"; 
+                    send_file(ssl, "../Layout/media/voice_chat_icon.svg", 200, "image/svg+xml");
+                }
+                else if(compare_strings(path, (const char*)"/media/magnifying_glass.svg")){
+                    std::cout << "Sending /media/magnifying_glass.svg...\n"; 
+                    send_file(ssl, "../Layout/media/magnifying_glass.svg", 200, "image/svg+xml");
+                }
+                else if(compare_strings(path, (const char*)"/media/add_icon.svg")){
+                    std::cout << "Sending /media/add_icon.svg...\n"; 
+                    send_file(ssl, "../Layout/media/add_icon.svg", 200, "image/svg+xml");
+                }
+                else if(compare_strings(path, (const char*)"/media/delete.svg")){
+                    std::cout << "Sending /media/delete.svg...\n"; 
+                    send_file(ssl, "../Layout/media/delete.svg", 200, "image/svg+xml");
+                }
+                else if(compare_strings(path, (const char*)"/media/copy.svg")){
+                    std::cout << "Sending /media/copy.svg...\n"; 
+                    send_file(ssl, "../Layout/media/copy.svg", 200, "image/svg+xml");
+                }
+                else if(compare_strings(path, (const char*)"/media/edit.svg")){
+                    std::cout << "Sending /media/edit.svg...\n"; 
+                    send_file(ssl, "../Layout/media/edit.svg", 200, "image/svg+xml");
                 }
                 else if(compare_strings(path, (const char*)"/media/favicon.ico")){
                     std::cout << "Sending favicon.ico...\n"; 
                     send_file(ssl, "../Layout/media/favicon.ico", 200, "image/x-icon");
                 }
+
+
+
                 else if(compare_strings(path, (const char*)"/scripts/script.js")){
                     std::cout << "Sending /scripts/script.js...\n"; 
                     send_file(ssl, "../Layout/scripts/script.js", 200, "text/javascript");
                 }
                
+                
                 else{
-                    std::cout << "Sending not_found.html...\n"; ;
+                    std::cout << "Sending not_found.html...\n";
                     send_file(ssl, "../Layout/markup/not_found.html", 404, "text/html");
                 }
-                
             }
             else if(compare_strings(method, (const char*)"POST")){
                 HTTP::UserCredentials credentials = get_form_data(buffer);
                 std::cout << credentials.email << '\n' << credentials.password << '\n';
                 if(database.searchUserEntry(credentials)){
-                    send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
+                    //send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
+                    SSL_write(ssl, "HTTP/1.1 302\r\nLocation: /passwords\r\n", 36);
                 }
             }
             SSL_shutdown(ssl);
