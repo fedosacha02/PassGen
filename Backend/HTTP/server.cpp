@@ -514,6 +514,14 @@ int start(Database& database){
                     std::cout << "Sending /media/edit.svg...\n"; 
                     send_file(ssl, "../Layout/media/edit.svg", 200, "image/svg+xml");
                 }
+                else if(compare_strings(path, (const char*)"/media/medal.svg")){
+                    std::cout << "Sending /media/medal.svg...\n"; 
+                    send_file(ssl, "../Layout/media/medal.svg", 200, "image/svg+xml");
+                }
+                else if(compare_strings(path, (const char*)"/media/star.svg")){
+                    std::cout << "Sending /media/star.svg...\n"; 
+                    send_file(ssl, "../Layout/media/star.svg", 200, "image/svg+xml");
+                }
                 else if(compare_strings(path, (const char*)"/media/favicon.ico")){
                     std::cout << "Sending favicon.ico...\n"; 
                     send_file(ssl, "../Layout/media/favicon.ico", 200, "image/x-icon");
@@ -521,9 +529,13 @@ int start(Database& database){
 
 
 
-                else if(compare_strings(path, (const char*)"/scripts/script.js")){
-                    std::cout << "Sending /scripts/script.js...\n"; 
-                    send_file(ssl, "../Layout/scripts/script.js", 200, "text/javascript");
+                else if(compare_strings(path, (const char*)"/scripts/login.js")){
+                    std::cout << "Sending /scripts/login.js...\n"; 
+                    send_file(ssl, "../Layout/scripts/login.js", 200, "text/javascript");
+                }
+                else if(compare_strings(path, (const char*)"/scripts/home.js")){
+                    std::cout << "Sending /scripts/home.js...\n"; 
+                    send_file(ssl, "../Layout/scripts/home.js", 200, "text/javascript");
                 }
                
                 
