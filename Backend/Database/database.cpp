@@ -6,7 +6,6 @@
 #include "../User/user.hpp"
 #include "../Functions/functions.cpp"
 
-
 // Opening the database schema
 Database::Database():  
     users("Data/users.bin", std::ios::in | std::ios::out | std::ios::binary), 
@@ -27,7 +26,7 @@ Database::~Database(){
 
     std::cout << "The database has been closed.\n";
 }
-template <typename T> void Database::createEntry(T obj, std::fstream& db){
+template <typename T> void Database::createEntry(const T& obj, std::fstream& db){
     if(db){
         db.write((char*)&obj, sizeof(T));
         std::cout << "The entry was created successfully\n";
@@ -36,16 +35,16 @@ template <typename T> void Database::createEntry(T obj, std::fstream& db){
 };
 
 
-bool Database::searchUserEntry(char username[USERNAME_LENGTH_LIMIT], User& user){
-    
+bool Database::searchUserEntry(const HTTP::UserCredentials& credentials){
+    User* user;
     if(users){
         users.seekg(0, users.beg);
 
-        while (users.read((char*)&user, sizeof(User))){
-            if(user.is_deleted) continue;
-            std::cout << user.username << '\n';
-            if(compare_strings(user.username, username)){
-                std::cout << "The user has been found\n" << &user << '\n';
+        while (users.read((char*)user, sizeof(User))){
+            if(user->is_deleted) continue;
+            std::cout << user->email << '\n';
+            if(compare_strings(user->email, credentials.email)){
+                std::cout << "The user has been found\n" << user << '\n';
                 // Reset the stream's error state flags
                 users.clear();
                 return true;
@@ -53,7 +52,7 @@ bool Database::searchUserEntry(char username[USERNAME_LENGTH_LIMIT], User& user)
         }
         // Reset the stream's error state flags
         users.clear();
-        std::cout << "The found user " << username << " has NOT been found\n";
+        std::cout << "The found user " << credentials.email << " has NOT been found\n";
         return false; 
     }
     else std::cout << "Something with the database went wrong.\n";

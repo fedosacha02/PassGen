@@ -42,6 +42,9 @@
 #define NAME_LENGTH_LIMIT 30
 #define PASSWORD_LENGTH_LIMIT 20
 
+#define PORT "8080"  // the port users will be connecting to
+#define BACKLOG 1   // how many pending connections queue will hold
+#define BUFFER_SIZE 1024
 
 //Database limits
 #define USERS_LIMIT 100

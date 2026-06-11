@@ -6,6 +6,7 @@
 #include "../Organisation/organisation.hpp"
 #include "../Password/password.hpp"
 #include "../Password/password_sharing.hpp"
+#include "../HTTP/server.hpp"
 
 // Flat File Database 
 struct Database{
@@ -20,8 +21,8 @@ struct Database{
     Database();
     // Closing the database schema
     ~Database();
-    template <typename T> void createEntry(T, std::fstream&);
-    bool searchUserEntry(char username[USERNAME_LENGTH_LIMIT], User& user);
-    template <typename T>void markAsDeleted(ID id, std::fstream& db);
+    template <typename T> void createEntry(const T&, std::fstream&);
+    bool searchUserEntry(const HTTP::UserCredentials& credentials);
+    template <typename T>void markAsDeleted(ID, std::fstream&);
     template<typename T> void outputAllEntries(std::fstream&);
 };

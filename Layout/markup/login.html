@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    
     <title>Реєстрація</title>
     <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="icon" type="image/x-icon" href="../media/favicon.ico">
+    <!-- Option A: Loading in head using 'defer' so it runs after HTML parses -->
+    <script src="../scripts/script.js" defer></script>
 </head>
 <body>
     <header>
@@ -20,9 +25,9 @@
         </div>
 
         <div>
-            <form method="post" id="log">
-                <input type="email" name="email" id="email" placeholder="f*****@gmail.com">
-                <input type="password" id="pass" name="password" minlength="8" required placeholder="********">
+            <form method="post" action="/" id="log">
+                <input type="email" name="email" id="email" placeholder="f*****@gmail.com"  autocomplete="on">
+                <input type="password" id="pass" name="password" minlength="8" required placeholder="********" autocomplete="on">
                 <button form="log"><strong>Увійти</strong></button>
                 <h2>Забули пароль?</h2>
                 <button><strong>Скинути</strong></button>
@@ -30,29 +35,12 @@
         </div>
         
         <form method="post" id="reg" style="display: none;">
-            <input type="email" name="email" id="email" placeholder="f*****@gmail.com">
-            <input type="password" id="pass" name="password" minlength="8" required placeholder="********">
-            <input type="password" id="r_pass" name="repeat_password" minlength="8" required placeholder="********">
+            <input type="email" name="email" id="email" placeholder="f*****@gmail.com" autocomplete="on">
+            <input type="password" id="pass" name="password" minlength="8" required placeholder="********"  autocomplete="on">
+            <input type="password" id="r_pass" name="repeat_password" minlength="8" required placeholder="********" autocomplete="on">
             <button form="reg"><strong>Зареєструватися</strong></button>
         </form>
     </main>
 </body>
-<script>
-    const buttons = document.querySelectorAll("main > div#switch > button");
-    const forms = document.querySelectorAll("main form");
-
-    buttons[0].addEventListener("click", (event) => {
-        buttons[0].classList.remove("disabled");
-        buttons[1].classList.add("disabled");
-        forms[0].parentElement.style.display = "flex";
-        forms[1].style.display = "none";
-    })
-    buttons[1].addEventListener("click", (event) => {
-        buttons[1].classList.remove("disabled");
-        buttons[0].classList.add("disabled");
-        forms[0].parentElement.style.display = "none";
-        forms[1].style.display = "flex";
-    });
-</script>
 
 </html>
