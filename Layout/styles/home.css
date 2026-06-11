@@ -38,9 +38,15 @@ input[type="search"]::-ms-reveal {
     --background-black: #000000;
     /* Text */
     --text-dark-slate-grey: #315659;
+    --text-honey-dew: #D6F0DC;
     /* Border */
     --border-ocean-blue: #3C84A9;
     --background-pale: #93672D;
+    --neutral: #D9D9D9;
+
+    --progress-bar-width: 200px;
+    --progress-bar-height: 200px;
+    --font-size: 2rem;
 }
 
 body{
@@ -88,16 +94,10 @@ main{
 ul, ol {
   list-style-type: none; /* Removes the markers */
 }
-main > div{
-    flex: 1 1 40%;
-}
 nav{
-    flex: 1 1 20%;
-}
-main > ul{
     flex: 0 0 20%;
 }
-ul > li{
+nav > ul > li{
     padding: 6px 12px;
     border: solid 1px var(--border-ocean-blue);
     border-radius: 8px;
@@ -107,35 +107,115 @@ ul > li{
 li#current{
     background-color: rgba(147, 103, 45, 0.35); 
 }
-article.passwords{
-    width: 100%;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+
+div.circular-progress {
+  width: var(--progress-bar-width);
+  height: var(--progress-bar-height);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-article.password{
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 12px;
-    border: solid 2px var(--primary-golden-earth);
-    border-radius: 12px;
+div.inner-circle {
+  position: absolute;
+  width: calc(var(--progress-bar-width) - 50px);
+  height: calc(var(--progress-bar-height) - 50px);
+  border-radius: 50%;
+  background-color: lightgrey;
 }
-article.passwords > article.password > span{
+
+p.percentage {
+  position: relative;
+  font-size: var(--font-size);
+  white-space: pre-line;
+  text-align: center;
+}
+
+article{
     display: flex;
-    flex-direction: row;
+    flex-flow: row;
     justify-content: space-between;
-    align-items: center;
+    padding: 20px;
 }
-article.passwords > article.password > span:last-child{
+article > div{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+}
+article > div > h2{
+    text-align: center;
+}
+article > div:first-child > div{
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
-    gap: 30px;
+    gap: 15px;
+    align-items: center;
+    border: var(--primary-color-cerulean) 1px solid;
+    border-radius: 12px;
+    padding: 8px;
+    justify-content: space-between;
 }
-article.passwords > article.password > span > span{
+article > div:first-child > div > div{
     display: flex;
-    flex-flow: row nowrap;
-    gap: 10px;
+    flex-direction: column;
+}
+article > div:first-child > div > img{
+    height: 50px;
+}
+article > div:first-child > button{
+    padding: 24px;
+    border-radius: 12px;
+    background-color: var(--primary-color-sky-reflection);
+    border: none;
+    color:var(--text-honey-dew);
+    font-size: 1.3em;
+}
+
+article ul > li{
+    margin-bottom: 12px;
+}
+article ul > li:first-child{
+    text-decoration: line-through;
+}
+article ul > li:not(:first-child){
+    filter: blur(4px);
+    user-select: none; /* Prevents copying to read it */
+}
+
+section{
+    padding: 20px;
+}
+section > ol{
+    margin-top: 24px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+}
+section > ol > li > div{
+    width: 100%;
+    height: 20px;
+    background-color: var(--neutral);
+}
+section > ol > li:first-child > div{
+    background-color: var(--primary-color-cerulean);
+}
+section > ol > li > span{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+section > ol > li:not(:first-child) > span > img{
+    filter: invert(99%) sepia(0%) saturate(0%) hue-rotate(169deg) brightness(89%) contrast(93%);
+}
+section > ol > li{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 12px;
+    align-items: flex-end;
+}
+section > ol > li:not(:first-child) > h2{
+    filter: blur(6px);
 }

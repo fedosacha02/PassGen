@@ -4,4 +4,4 @@ postman/
 .postman/
 
 # only ignore the main file in the current directory, not subdir/main
-/main
+main

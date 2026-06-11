@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>Home</title>
+    <link rel="stylesheet" href="../styles/home.css">
+    <link rel="icon" type="image/x-icon" href="../media/favicon.ico">
+    <!-- Option A: Loading in head using 'defer' so it runs after HTML parses -->
+    <script src="../scripts/home.js" defer></script>
+</head>
+<body>
+    <header>
+        <a href="/"><img src="../media/logotype.svg"></a>
+        <search class="search-panel">
+            <form action="/search-results" method="GET">
+                <input 
+                    type="search" 
+                    id="site-search" 
+                    name="q" 
+                    placeholder="Search information..." 
+                    aria-label="Search website content"
+                    autocomplete="on" required>
+                <input type="image" src="../media/magnifying_glass.svg" alt="Search" />
+                
+            </form>
+        </search>
+        <img src="../media/voice_chat_icon.svg">
+        <img src="../media/add_icon.svg">
+    </header>
+    <main>
+        <nav>
+            <ul>
+                <li id="current"><a href="/home">Home</a></li>
+                <li><a href="/passwords">Passwords</a></li>
+                <li><a href="/groups">Groups</a></li>
+                <li><a href="/organisations">Organisations</a></li>
+                <li><a href="/settings">Settings</a></li>
+            </ul>
+        </nav>
+
+        <div></div>
+
+        <div class="circular-progress" data-inner-circle-color="white" data-percentage="75" data-progress-color="#57A029" data-bg-color="#D9D9D9">
+            <div class="inner-circle"></div>
+            <p class="percentage">0/100</p>
+        </div>
+    </main>
+    <article>
+        <div>
+            <h2>Daily Challenges</h2>
+            <div>
+                <img src="../media/medal.svg">
+                <div>
+                    <h3>+ 15 XP</h3>
+                    <h4>Fix 1 weak password</h4>
+                </div>
+                <h1>0 / 1</h1>
+            </div>
+            <div>
+                <img src="../media/medal.svg">
+                <div>
+                    <h3>+ 20 XP</h3>
+                    <h4>Fix 2 reused passwords</h4>
+                </div>
+                <h1>1 / 2</h1>
+            </div>
+            <button>Claim rewards (+35 XP)</button>
+        </div>
+        <div>
+            <h2>Achievements</h2>
+            <ul>
+                <li>🏆 First Strong Password</li>
+                <li>🔐 2FA Activated</li>
+                <li>🛡️ No Reused Passwords</li>
+                <li>🔥 7-Day Security Streak</li>
+                <li>⚡  Fixed 5 Weak Passwords</li>
+                <li>👑 100% Security Score</li>
+            </ul>
+            
+            
+        </div>
+    </article>
+    <section>
+        <h1>Your progress</h1>
+        <ol>
+            <li>
+                <div></div>
+                <span><img src="../media/star.svg" alt="star">
+                <strong>0 XP</strong></span>
+                <h2>Beginner</h2>
+            </li>
+            <li>
+                <div></div>
+                <span><img src="../media/star.svg" alt="star">
+                <strong>100 XP</strong></span>
+                <h2>Beginner</h2>
+            </li>
+            <li>
+                <div></div>
+                <span><img src="../media/star.svg" alt="star">
+                <strong>150 XP</strong></span>
+                <h2>Beginner</h2>
+            </li>
+            <li>
+                <div></div>
+                <span><img src="../media/star.svg" alt="star">
+                <strong>250 XP</strong></span>
+                <h2>Beginner</h2>
+            </li>
+            <li>
+                <div></div>
+                <span><img src="../media/star.svg" alt="star">
+                <strong>500 XP</strong></span>
+                <h2>Beginner</h2>
+            </li>
+            <li>
+                <div></div>
+                <span><img src="../media/star.svg" alt="star">
+                <strong>750 XP</strong></span>
+                <h2>Beginner</h2>
+            </li>
+            <li>
+                <div></div>
+                <span><img src="../media/star.svg" alt="star">
+                <strong>1000 XP</strong></span>
+                <h2>Beginner</h2>
+            </li>
+        </ol>
+    </section>
+</body>
+</html>
