@@ -60,7 +60,7 @@ header > search > form > input{
     border: none;
     outline: none;
 }
-header img{
+header img, header svg{
     width: 50px;
 }
 form{
@@ -107,35 +107,55 @@ ul > li{
 li#current{
     background-color: rgba(147, 103, 45, 0.35); 
 }
-article.passwords{
+article.organisations{
     width: 100%;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
-article.password{
+article{
     display: flex;
     flex-direction: column;
     gap: 20px;
     padding: 12px;
-    border: solid 2px var(--primary-golden-earth);
     border-radius: 12px;
 }
-article.passwords > article.password > span{
+article.organisation{
+    border: solid 2px var(--primary-golden-earth);
+}
+
+article > article > span{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
-article.passwords > article.password > span:last-child{
+article > article.organisation > span:last-child{
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
     gap: 30px;
 }
-article.passwords > article.password > span > span{
+article > article > span > span{
     display: flex;
     flex-flow: row nowrap;
     gap: 10px;
+}
+article.foreign-organisation{
+    border: solid 2px var(--primary-color-cerulean);
+    flex-direction: row;
+    justify-content: space-between;
+}
+article.foreign-organisation > span{
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+   
+}
+article.foreign-organisation > span:first-child{
+    align-items: flex-start;
+}
+article.foreign-organisation > span:last-child{
+    align-items: flex-end;
 }

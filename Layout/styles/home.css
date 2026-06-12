@@ -184,38 +184,83 @@ article ul > li:not(:first-child){
 }
 
 section{
-    padding: 20px;
+    margin: 20px;
 }
+
 section > ol{
     margin-top: 24px;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
+    align-items: baseline;
 }
-section > ol > li > div{
-    width: 100%;
+section > ol > li{
+    display: flex;
+    flex-flow: column nowrap;
+    flex: 1;
+    justify-content: space-between;
+    gap: 2em;
+    margin-left: -10px;
+
+}
+section > ol > li > div:first-child{
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+section > ol > li:first-child > div > svg:first-child > rect{
+    fill: var(--primary-color-cerulean);
+}
+section > ol > li:not(:first-child) > div > svg:first-child > rect{
+    fill: var(--neutral);
+}
+section > ol > li > div > div{
+    flex:1;
     height: 20px;
-    background-color: var(--neutral);
 }
-section > ol > li:first-child > div{
-    background-color: var(--primary-color-cerulean);
+
+section > ol > li > div > svg:last-child{
+    position: relative;
+    right: 5px;
+    
 }
-section > ol > li > span{
+div.level-info > span{
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 5px;
 }
-section > ol > li:not(:first-child) > span > img{
-    filter: invert(99%) sepia(0%) saturate(0%) hue-rotate(169deg) brightness(89%) contrast(93%);
+section > ol > li:first-child > div > div{
+    background-color: var(--primary-color-cerulean);
 }
-section > ol > li{
+section > ol > li:not(:first-child) > div > div{
+    background-color: var(--neutral);
+}
+
+div.level-info > span > svg{
+    fill: var(--primary-color-cerulean);
+}
+
+
+
+section > ol > li:first-child > div > svg > circle{
+    stroke: var(--primary-color-cerulean);
+    fill: var(--background-white)
+}
+section > ol > li:not(:first-child) > div > svg > circle{
+    stroke: var(--neutral);
+    fill:var(--background-white);
+}
+div.level-info{
+    padding: 0.5em;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    gap: 12px;
+    gap: 5px;
     align-items: flex-end;
 }
-section > ol > li:not(:first-child) > h2{
-    filter: blur(6px);
+
+div.level-info > h2, div.level-info > span > strong{
+    font-size: 1em;
 }
