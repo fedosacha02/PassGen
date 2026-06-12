@@ -35,7 +35,7 @@ template <typename T> void Database::createEntry(const T& obj, std::fstream& db)
 };
 
 
-bool Database::searchUserEntry(const HTTP::UserCredentials& credentials){
+bool Database::validateUserEntry(const HTTP::UserCredentials& credentials){
     User* user;
     if(users){
         users.seekg(0, users.beg);
@@ -44,10 +44,13 @@ bool Database::searchUserEntry(const HTTP::UserCredentials& credentials){
             if(user->is_deleted) continue;
             std::cout << user->email << '\n';
             if(compare_strings(user->email, credentials.email)){
-                std::cout << "The user has been found\n" << user << '\n';
-                // Reset the stream's error state flags
-                users.clear();
-                return true;
+                if(compare_strings(user->master_password, credentials.password)){
+                    std::cout << "The user has been found\n" << user << '\n';
+                    // Reset the stream's error state flags
+                    users.clear();
+                    return true;
+                }
+                
             }
         }
         // Reset the stream's error state flags

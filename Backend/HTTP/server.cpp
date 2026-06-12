@@ -31,6 +31,9 @@
 
 static const char cache_id[] = "OpenSSL Demo Server";
 
+#define TOKEN_BYTES 32 // 32 bytes gives 256 bits of entropy
+#define HEX_LEN (TOKEN_BYTES * 2 + 1)
+
 #ifdef _WIN32
 static const char *progname;
 
@@ -83,6 +86,27 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+// Generates cryptographically secure random bytes
+int generate_random_bytes(unsigned char *buffer, size_t size) {
+    FILE *urandom = fopen("/dev/urandom", "rb");
+    if (!urandom) {
+        return 0; // Failed to open
+    }
+    
+    size_t read_bytes = fread(buffer, 1, size, urandom);
+    fclose(urandom);
+    
+    return read_bytes == size;
+}
+
+// Converts raw bytes to a hex-encoded string safe for cookies
+void bytes_to_hex(const unsigned char *bytes, size_t size, char *output) {
+    for (size_t i = 0; i < size; i++) {
+        sprintf(&output[i * 2], "%02x", bytes[i]);
+    }
+    output[size * 2] = '\0';
+}
+
 void send_file(SSL *ssl, const char* file_path, unsigned short status_code, const char* content_type) {
     FILE* file = fopen(file_path, "rb");
     if (file == nullptr) {
@@ -96,7 +120,7 @@ void send_file(SSL *ssl, const char* file_path, unsigned short status_code, cons
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
     char http_header[512];
-    sprintf(http_header, "HTTP/1.1 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests;\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
+    sprintf(http_header, "HTTP/2 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests;\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
     std::cout << http_header << '\n';
     if(SSL_write(ssl, http_header, strlen(http_header)) <= 0){
         perror("send: http header");
@@ -138,6 +162,36 @@ HTTP::UserCredentials get_form_data(char* request){
 
 }
 
+bool compare_token(char* buffer, const char* cookie_token){
+    char* access_token_ptr;
+    if((access_token_ptr = strstr(buffer, "access_token")) != nullptr){
+        access_token_ptr+=13;
+        for (size_t i = 0; *access_token_ptr != '\r'; access_token_ptr++, i++)
+        {
+            if(*access_token_ptr != cookie_token[i]){std::cout << "Token is not valid.\n";return false;}   
+        }
+        return true;
+    }
+    return false;
+}
+
+
+void add_authorised_route(const char path[20], char* buffer, char cookie_token[HEX_LEN], SSL* ssl){
+    if(compare_strings(path, path)){
+        std::cout << "INCOMING TOKEN: " << cookie_token << '\n';
+        if (compare_token(buffer, cookie_token)){
+            std::cout << "Sending " << path << "...\n";
+            char file_path[50];
+            sprintf(file_path, "../Layout/markup%s.html", path);
+            send_file(ssl, file_path, 200, "text/html");
+        }
+        else{
+            std::cout << "TOKEN is empty or invalid. Sending /login...\n";
+            send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+        }
+    }
+}
+
 int get_http_info(char* output, const char* buffer, int displacement = 0){
     char a = buffer[displacement];
     size_t i, j;
@@ -154,7 +208,8 @@ int start(Database& database){
     const char *hostport;
     SSL_CTX *ctx = NULL;
     BIO *acceptor_bio;
-
+    
+    
     #ifdef _WIN32
         progname = argv[0];
     #endif
@@ -283,11 +338,12 @@ int start(Database& database){
         ERR_print_errors_fp(stderr);
         errx(res, "Error setting up acceptor socket");
     }
-    
+    unsigned char raw_token[TOKEN_BYTES];
+    char cookie_token[HEX_LEN];
+
     while(1) {  // main accept() loop
         BIO *client_bio;
         SSL *ssl;
-        unsigned char buf[8192];
         size_t nread;
         size_t nwritten;
         size_t total = 0;
@@ -414,8 +470,12 @@ int start(Database& database){
         
         
         //BIO_free(acceptor_bio); // child doesn't need the listener
-        if(!fork()){
-            char buffer[1024] = {0};
+        
+
+            
+
+
+            char buffer[8192] = {0};
 
             SSL_read(ssl, buffer, sizeof(buffer));
             std::cout << buffer << '\n';
@@ -430,31 +490,64 @@ int start(Database& database){
             
             if(compare_strings(method, (const char*)"GET")){
                 //SSL_write(ssl, "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n",70);
-                if(compare_strings(path, (const char*)"/")){
+                if(compare_strings(path, (const char*)"/login")){
                     std::cout << "Sending login.html...\n"; 
                     send_file(ssl, "../Layout/markup/login.html", 200, "text/html");
                 }
+               
+            
                 else if(compare_strings(path, (const char*)"/home")){
-                    std::cout << "Sending home.html...\n"; 
-                    send_file(ssl, "../Layout/markup/home.html", 200, "text/html");
+                    std::cout << "INCOMING TOKEN: " << cookie_token << '\n';
+                    if (compare_token(buffer, cookie_token)){
+                        std::cout << "Sending /home...\n"; 
+                        send_file(ssl, "../Layout/markup/home.html", 200, "text/html");
+                    }
+                    else{
+                        std::cout << "TOKEN is empty or invalid. Sending /login...\n";
+                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                    }
                 }
                 else if(compare_strings(path, (const char*)"/passwords")){
-                    std::cout << "Sending passwords.html...\n"; 
-                    send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
+                    if (compare_token(buffer, cookie_token)){
+                        std::cout << "Sending /passwords...\n"; 
+                        send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
+                    }
+                    else{
+                        std::cout << "TOKEN is empty or invalid. Sending /login...\n"; 
+                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                    }
                 }
                 else if(compare_strings(path, (const char*)"/groups")){
-                    std::cout << "Sending groups.html...\n"; 
-                    send_file(ssl, "../Layout/markup/groups.html", 200, "text/html");
+                    if (compare_token(buffer, cookie_token)){
+                        std::cout << "Sending /groups...\n"; 
+                        send_file(ssl, "../Layout/markup/groups.html", 200, "text/html");
+                    }
+                    else{
+                        std::cout << "TOKEN is empty or invalid. Sending /login...\n"; 
+                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                    }
                 }
                 else if(compare_strings(path, (const char*)"/organisations")){
-                    std::cout << "Sending organisations.html...\n"; 
-                    send_file(ssl, "../Layout/markup/organisations.html", 200, "text/html");
+                    if (compare_token(buffer, cookie_token)){
+                        std::cout << "Sending /organisations...\n"; 
+                        send_file(ssl, "../Layout/markup/organisations.html", 200, "text/html");
+                    }
+                    else{
+                        std::cout << "TOKEN is empty or invalid. Sending /login...\n"; 
+                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                    }
                 }
                 else if(compare_strings(path, (const char*)"/settings")){
-                    std::cout << "Sending settings.html...\n"; 
-                    send_file(ssl, "../Layout/markup/settings.html", 200, "text/html");
+                    if (compare_token(buffer, cookie_token)){
+                        std::cout << "Sending /settings...\n"; 
+                        send_file(ssl, "../Layout/markup/settings.html", 200, "text/html");
+                    }
+                    else{
+                        std::cout << "TOKEN is empty or invalid. Sending /login...\n"; 
+                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                    }
                 }
-
+                    
 
                 else if(compare_strings(path, (const char*)"/styles/login.css")){
                     std::cout << "Sending /styles/login.css...\n"; 
@@ -547,15 +640,23 @@ int start(Database& database){
             else if(compare_strings(method, (const char*)"POST")){
                 HTTP::UserCredentials credentials = get_form_data(buffer);
                 std::cout << credentials.email << '\n' << credentials.password << '\n';
-                if(database.searchUserEntry(credentials)){
+                if(database.validateUserEntry(credentials)){
                     //send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
-                    SSL_write(ssl, "HTTP/1.1 302\r\nLocation: /passwords\r\n", 36);
+                    // 1. Generate secure random bytes
+                    if (!generate_random_bytes(raw_token, TOKEN_BYTES)) {
+                        fprintf(stderr, "Error generating secure random bytes.\n");
+                        return 1;
+                    }
+                    // 2. Encode to Hex (makes it safe for HTTP cookie headers)
+                    bytes_to_hex(raw_token, TOKEN_BYTES, cookie_token);
+                    char http_header[140];
+                    int length = sprintf(http_header, "HTTP/2 200\r\nSet-Cookie: access_token=%s\r\nLocation: /\r\n\r\n", cookie_token);
+                    SSL_write(ssl, http_header, length);
                 }
             }
             SSL_shutdown(ssl);
             SSL_free(ssl);
-            exit(0);
-        } else SSL_free(ssl);  // frees parent's reference without shutdown
+            //exit(0);
         
     }
     /*

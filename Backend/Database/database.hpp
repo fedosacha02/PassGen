@@ -22,7 +22,7 @@ struct Database{
     // Closing the database schema
     ~Database();
     template <typename T> void createEntry(const T&, std::fstream&);
-    bool searchUserEntry(const HTTP::UserCredentials& credentials);
+    bool validateUserEntry(const HTTP::UserCredentials& credentials);
     template <typename T>void markAsDeleted(ID, std::fstream&);
     template<typename T> void outputAllEntries(std::fstream&);
 };
