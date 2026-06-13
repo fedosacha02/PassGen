@@ -7,7 +7,8 @@
 class User{
     private:
         static ID count;
-        const ID id;
+        ID id;
+        char cookie_token[HEX_LEN];
         char username[USERNAME_LENGTH_LIMIT];
         char master_password[PASSWORD_LENGTH_LIMIT];
         char email[EMAIL_LENGTH_LIMIT];
@@ -72,6 +73,8 @@ class User{
         friend std::ostream& operator<<(std::ostream& os, const User* user);
         bool isReal();
         bool confirmMasterPassword(char password[PASSWORD_LENGTH_LIMIT]);
+
+        static void setCount(Database& db);
 };
 
 

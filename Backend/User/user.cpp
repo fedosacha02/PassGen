@@ -6,10 +6,12 @@
 #include "../Password/password.hpp"
 #include "../Database/database.hpp"
 
+
+
 // Static ID initialisation
 ID User::count = 0;
 
-User::User(): id{count++}, username{"unknown"}, master_password{"unknown"}, email{"unknown"}{}
+User::User() = default;
 
 User::User(User& user): id{user.id}{
     assign(user.username, username);
@@ -27,12 +29,12 @@ User::User(char username[USERNAME_LENGTH_LIMIT], char master_password[PASSWORD_L
 }
 
 User::~User(){
-    std::cout << "The user " << username << " was deleted \n";
+    //std::cout << "The user " << username << " was deleted \n";
 }
 
 
-std::ostream& operator<<(std::ostream& os, const User* user) {
-    os << user->id << ", " << user->username << ", " << user->master_password << ", " << user->email << ", " << user->is_deleted << '\n';
+std::ostream& operator<<(std::ostream& os, const User* user){
+    os << user->cookie_token << user->id << ", " << user->username << ", " << user->master_password << ", " << user->email << ", " << user->is_deleted << '\n';
     return os; // Return the stream for chaining
 }
 
@@ -49,4 +51,8 @@ void User::create_user_password(const char name[NAME_LENGTH_LIMIT], const char v
 }
 void User::rename_password(ID password_id){
     
+}
+
+void User::setCount(Database& db){
+    count = db.countObjects<User>(db.users);
 }

@@ -44,7 +44,10 @@
 
 #define PORT "8080"  // the port users will be connecting to
 #define BACKLOG 1   // how many pending connections queue will hold
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 8192
+#define TOKEN_BYTES 32 // 32 bytes gives 256 bits of entropy
+#define HEX_LEN (TOKEN_BYTES * 2 + 1)
+
 
 //Database limits
 #define USERS_LIMIT 100
@@ -61,6 +64,7 @@
 (ORGANISATIONS_LIMIT*ORGANISATION_SHARED_PASSWORDS_LIMIT)
 
 #define ALL_USER_FOLDERS_LIMIT (USERS_LIMIT*USER_FOLDERS_LIMIT)
+
 
 
 // The type of IDs

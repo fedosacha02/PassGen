@@ -8,7 +8,7 @@
 
 int main(){
     Database database;
-    
+ 
     
     /*char username1[USERNAME_LENGTH_LIMIT] = "fedosacha02";
     char master_password1[PASSWORD_LENGTH_LIMIT] = "nigde1234%23";

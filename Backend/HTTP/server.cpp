@@ -31,8 +31,6 @@
 
 static const char cache_id[] = "OpenSSL Demo Server";
 
-#define TOKEN_BYTES 32 // 32 bytes gives 256 bits of entropy
-#define HEX_LEN (TOKEN_BYTES * 2 + 1)
 
 #ifdef _WIN32
 static const char *progname;
@@ -120,7 +118,38 @@ void send_file(SSL *ssl, const char* file_path, unsigned short status_code, cons
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
     char http_header[512];
-    sprintf(http_header, "HTTP/2 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests;\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
+    sprintf(http_header, "HTTP/2.0 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests;\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
+    std::cout << http_header << '\n';
+    if(SSL_write(ssl, http_header, strlen(http_header)) <= 0){
+        perror("send: http header");
+    }
+
+    while((bytes_read = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
+        if(SSL_write(ssl, buffer, bytes_read) <= 0) perror("send: file content");
+    }
+    std::cout << "The file located at " << file_path << " was successfully sended.\n"; 
+
+    fclose(file);
+    
+
+}
+void send_login_page(SSL *ssl) {
+    const char* content_type = "text/html";
+    unsigned short status_code = 302;
+    const char* file_path = "../Layout/markup/login.html";
+    FILE* file = fopen(file_path, "rb");
+    if (file == nullptr) {
+        perror("Error opening the file.");
+        return;
+    }
+    // Get a file size by means of reading metadata
+    struct stat st;
+    stat(file_path, &st);
+    int size = st.st_size;
+    char buffer[BUFFER_SIZE];
+    size_t bytes_read;
+    char http_header[512];
+    sprintf(http_header, "HTTP/2.0 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nLocation: /login\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests;\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
     std::cout << http_header << '\n';
     if(SSL_write(ssl, http_header, strlen(http_header)) <= 0){
         perror("send: http header");
@@ -168,13 +197,26 @@ bool compare_token(char* buffer, const char* cookie_token){
         access_token_ptr+=13;
         for (size_t i = 0; *access_token_ptr != '\r'; access_token_ptr++, i++)
         {
-            if(*access_token_ptr != cookie_token[i]){std::cout << "Token is not valid.\n";return false;}   
+            if(*access_token_ptr != cookie_token[i]){std::cout << "Token is not valid.\n"; return false;}   
         }
         return true;
     }
     return false;
 }
 
+bool get_cookie_token(char* buffer, char result[HEX_LEN]){
+    char* access_token_ptr;
+    if((access_token_ptr = strstr(buffer, "access_token")) != nullptr){
+        access_token_ptr+=13;
+        for (size_t i = 0; *access_token_ptr != '\r'; access_token_ptr++, i++)
+        {
+            
+            result[i] = *access_token_ptr;
+        }
+        return true;
+    }
+    return false;
+}
 
 void add_authorised_route(const char path[20], char* buffer, char cookie_token[HEX_LEN], SSL* ssl){
     if(compare_strings(path, path)){
@@ -206,7 +248,7 @@ int start(Database& database){
     int res = EXIT_FAILURE;
     long opts;
     const char *hostport;
-    SSL_CTX *ctx = NULL;
+    SSL_CTX *ctx = nullptr;
     BIO *acceptor_bio;
     
     
@@ -341,12 +383,12 @@ int start(Database& database){
     unsigned char raw_token[TOKEN_BYTES];
     char cookie_token[HEX_LEN];
 
+    User user;
+    char token[HEX_LEN];
+
     while(1) {  // main accept() loop
         BIO *client_bio;
         SSL *ssl;
-        size_t nread;
-        size_t nwritten;
-        size_t total = 0;
 
         /* Pristine error stack for each new connection */
         ERR_clear_error();
@@ -475,7 +517,7 @@ int start(Database& database){
             
 
 
-            char buffer[8192] = {0};
+            char buffer[BUFFER_SIZE] = {0};
 
             SSL_read(ssl, buffer, sizeof(buffer));
             std::cout << buffer << '\n';
@@ -489,7 +531,6 @@ int start(Database& database){
             
             
             if(compare_strings(method, (const char*)"GET")){
-                //SSL_write(ssl, "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: h2c\r\n\r\n",70);
                 if(compare_strings(path, (const char*)"/login")){
                     std::cout << "Sending login.html...\n"; 
                     send_file(ssl, "../Layout/markup/login.html", 200, "text/html");
@@ -497,54 +538,83 @@ int start(Database& database){
                
             
                 else if(compare_strings(path, (const char*)"/home")){
-                    std::cout << "INCOMING TOKEN: " << cookie_token << '\n';
-                    if (compare_token(buffer, cookie_token)){
-                        std::cout << "Sending /home...\n"; 
-                        send_file(ssl, "../Layout/markup/home.html", 200, "text/html");
+                    if(get_cookie_token(buffer, token)){
+                        if(database.findByToken(token, &user)){
+                            std::cout << "Sending /home...\n"; 
+                            send_file(ssl, "../Layout/markup/home.html", 200, "text/html");
+                        }
+                        else{
+                            std::cout << "TOKEN is INVALID. Sending /login...\n";
+                            send_login_page(ssl);
+                        }
                     }
                     else{
-                        std::cout << "TOKEN is empty or invalid. Sending /login...\n";
-                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                        std::cout << "TOKEN is EMPTY. Sending /login...\n";
+                        send_login_page(ssl);
                     }
                 }
                 else if(compare_strings(path, (const char*)"/passwords")){
-                    if (compare_token(buffer, cookie_token)){
-                        std::cout << "Sending /passwords...\n"; 
-                        send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
+                    if(get_cookie_token(buffer, token)){
+                        if(database.findByToken(token, &user)){
+                            std::cout << "Sending /passwords...\n"; 
+                            send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
+                        }
+                        else{
+                            std::cout << "TOKEN is INVALID. Sending /login...\n";
+                            send_login_page(ssl);
+                        }
                     }
                     else{
-                        std::cout << "TOKEN is empty or invalid. Sending /login...\n"; 
-                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                        std::cout << "TOKEN is EMPTY. Sending /login...\n";
+                        send_login_page(ssl);
                     }
                 }
                 else if(compare_strings(path, (const char*)"/groups")){
-                    if (compare_token(buffer, cookie_token)){
-                        std::cout << "Sending /groups...\n"; 
-                        send_file(ssl, "../Layout/markup/groups.html", 200, "text/html");
+                    if(get_cookie_token(buffer, token)){
+                        if(database.findByToken(token, &user)){
+                            std::cout << "Sending /groups...\n"; 
+                            send_file(ssl, "../Layout/markup/groups.html", 200, "text/html");
+                        }
+                        else{
+                            std::cout << "TOKEN is INVALID. Sending /login...\n";
+                            send_login_page(ssl);
+                        }
                     }
                     else{
-                        std::cout << "TOKEN is empty or invalid. Sending /login...\n"; 
-                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                        std::cout << "TOKEN is EMPTY. Sending /login...\n";
+                        send_login_page(ssl);
                     }
                 }
                 else if(compare_strings(path, (const char*)"/organisations")){
-                    if (compare_token(buffer, cookie_token)){
-                        std::cout << "Sending /organisations...\n"; 
-                        send_file(ssl, "../Layout/markup/organisations.html", 200, "text/html");
+                    if(get_cookie_token(buffer, token)){
+                        if(database.findByToken(token, &user)){
+                            std::cout << "Sending /organisations...\n"; 
+                            send_file(ssl, "../Layout/markup/organisations.html", 200, "text/html");
+                        }
+                        else{
+                            std::cout << "TOKEN is INVALID. Sending /login...\n";
+                            send_login_page(ssl);
+                        }
                     }
                     else{
-                        std::cout << "TOKEN is empty or invalid. Sending /login...\n"; 
-                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                        std::cout << "TOKEN is EMPTY. Sending /login...\n";
+                        send_login_page(ssl);
                     }
                 }
                 else if(compare_strings(path, (const char*)"/settings")){
-                    if (compare_token(buffer, cookie_token)){
-                        std::cout << "Sending /settings...\n"; 
-                        send_file(ssl, "../Layout/markup/settings.html", 200, "text/html");
+                    if(get_cookie_token(buffer, token)){
+                        if(database.findByToken(token, &user)){
+                            std::cout << "Sending /settings...\n"; 
+                            send_file(ssl, "../Layout/markup/settings.html", 200, "text/html");
+                        }
+                        else{
+                            std::cout << "TOKEN is INVALID. Sending /login...\n";
+                            send_login_page(ssl);
+                        }
                     }
                     else{
-                        std::cout << "TOKEN is empty or invalid. Sending /login...\n"; 
-                        send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
+                        std::cout << "TOKEN is EMPTY. Sending /login...\n";
+                        send_login_page(ssl);
                     }
                 }
                     
@@ -638,21 +708,32 @@ int start(Database& database){
                 }
             }
             else if(compare_strings(method, (const char*)"POST")){
-                HTTP::UserCredentials credentials = get_form_data(buffer);
-                std::cout << credentials.email << '\n' << credentials.password << '\n';
-                if(database.validateUserEntry(credentials)){
-                    //send_file(ssl, "../Layout/markup/passwords.html", 200, "text/html");
-                    // 1. Generate secure random bytes
-                    if (!generate_random_bytes(raw_token, TOKEN_BYTES)) {
-                        fprintf(stderr, "Error generating secure random bytes.\n");
-                        return 1;
+                if(compare_strings(path, (const char*)"/login")){
+                    HTTP::UserCredentials credentials = get_form_data(buffer);
+                    User user;
+                    if(database.validateUserEntry(credentials, &user)){
+                        // 1. Generate secure random bytes
+                        if (!generate_random_bytes(raw_token, TOKEN_BYTES)) {
+                            fprintf(stderr, "Error generating secure random bytes.\n");
+                            return 1;
+                        }
+                        // 2. Encode to Hex (makes it safe for HTTP cookie headers)
+                        bytes_to_hex(raw_token, TOKEN_BYTES, cookie_token);
+                        char http_header[150];
+                        int length = sprintf(http_header, "HTTP/2 303\r\nSet-Cookie: access_token=%s; Secure; HttpOnly\r\nLocation: /home\r\n\r\n", cookie_token);
+                        database.setCookieToken(&user, cookie_token);
+                        SSL_write(ssl, http_header, length);
+                    } 
+                    else{
+                        std::cout << "The CREDENTIALS are INVALID.\n";
                     }
-                    // 2. Encode to Hex (makes it safe for HTTP cookie headers)
-                    bytes_to_hex(raw_token, TOKEN_BYTES, cookie_token);
-                    char http_header[140];
-                    int length = sprintf(http_header, "HTTP/2 200\r\nSet-Cookie: access_token=%s\r\nLocation: /\r\n\r\n", cookie_token);
+                }
+                else if(compare_strings(path, (const char*)"/settings")){
+                    char http_header[150];
+                    int length = sprintf(http_header, "HTTP/2 303\r\nSet-Cookie: access_token=; Secure; HttpOnly; Max-Age=0\r\nLocation: /login\r\n\r\n");
                     SSL_write(ssl, http_header, length);
                 }
+        
             }
             SSL_shutdown(ssl);
             SSL_free(ssl);

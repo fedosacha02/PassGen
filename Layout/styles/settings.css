@@ -63,7 +63,7 @@ header > search > form > input{
 header img{
     width: 50px;
 }
-form{
+header form{
     width: 300px;
     display: flex;
     flex-flow: row nowrap;
@@ -119,12 +119,16 @@ footer{
     width: 100%;
     padding: 50px;
 }
-footer > button{
+footer > form > button{
     width: 100%;
     padding: 12px;
     background-color: var(--primary-color-cerulean);
-    color: var(--background-white);
     border: none;
     border-radius: 12px;
+    
+}
+
+footer > form > button > strong{
+    color: var(--background-white);
     font-size: 2em;
 }
