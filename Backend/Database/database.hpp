@@ -21,7 +21,7 @@ struct Database{
     Database();
     // Closing the database schema
     ~Database();
-    template <typename T> void createEntry(const T&, std::fstream&);
+    template <typename T> bool createEntry(const T&, std::fstream&);
     bool validateUserEntry(const HTTP::UserCredentials& credentials, User* user);
     template <typename T>void markAsDeleted(ID, std::fstream&);
     template<typename T> void outputAllEntries(std::fstream&);
@@ -29,4 +29,5 @@ struct Database{
 
     void setCookieToken(User* user, char token[HEX_LEN]);
     bool findByToken(char token[HEX_LEN], const User* result);
+    bool checkUserForUniqueness(char username[USERNAME_LENGTH_LIMIT]);
 };

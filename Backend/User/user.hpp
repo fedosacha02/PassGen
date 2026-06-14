@@ -12,7 +12,10 @@ class User{
         char username[USERNAME_LENGTH_LIMIT];
         char master_password[PASSWORD_LENGTH_LIMIT];
         char email[EMAIL_LENGTH_LIMIT];
-        char plan; // F: Free, B; Basic, P: Premium
+        enum class Plan{
+            free, basic, premium
+        };
+        Plan plan = Plan::free;
         bool is_deleted = false;
         
     
@@ -20,7 +23,7 @@ class User{
         // Constructors including a copy one and a desctructor
         User();
         User(User& user);
-        User(char[USERNAME_LENGTH_LIMIT], char[PASSWORD_LENGTH_LIMIT], char[EMAIL_LENGTH_LIMIT]);
+        User(char[USERNAME_LENGTH_LIMIT], char[EMAIL_LENGTH_LIMIT], char[PASSWORD_LENGTH_LIMIT], char[HEX_LEN]);
 
         ~User();
         // As an ordinal user

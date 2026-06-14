@@ -21,10 +21,12 @@ User::User(User& user): id{user.id}{
 
 }
 
-User::User(char username[USERNAME_LENGTH_LIMIT], char master_password[PASSWORD_LENGTH_LIMIT], char email[EMAIL_LENGTH_LIMIT]): id{count++}{
+User::User(char username[USERNAME_LENGTH_LIMIT], char email[EMAIL_LENGTH_LIMIT], char master_password[PASSWORD_LENGTH_LIMIT], char token[HEX_LEN] = nullptr): id{count++}{
+    assign(token, cookie_token);
     assign(username, this->username);
-    assign(master_password, this->master_password);
     assign(email, this->email);
+    assign(master_password, this->master_password);
+   
     std::cout << "The user " << this->username << " was created \n";
 }
 

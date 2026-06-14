@@ -29,13 +29,17 @@ Database::~Database(){
 
     std::cout << "The database has been closed.\n";
 }
-template <typename T> void Database::createEntry(const T& obj, std::fstream& db){
+template <typename T> bool Database::createEntry(const T& obj, std::fstream& db){
     if(db){
         db.write((char*)&obj, sizeof(T));
         std::cout << "The entry was created successfully\n";
+        return true;
     } 
-    else std::cout << "Something with the database went wrong.\n";
-};
+    else {
+        std::cout << "Something with the database went wrong.\n";
+        return false;
+    }
+}
 
 
 bool Database::validateUserEntry(const HTTP::UserCredentials& credentials, User* user){
@@ -44,8 +48,8 @@ bool Database::validateUserEntry(const HTTP::UserCredentials& credentials, User*
 
         while (users.read((char*)user, sizeof(User))){
             if(user->is_deleted) continue;
-            std::cout << user->email << '\n';
-            if(compare_strings(user->email, credentials.email)){
+            std::cout << user->username << '\n';
+            if(compare_strings(user->username, credentials.username)){
                 if(compare_strings(user->master_password, credentials.password)){
                     std::cout << "The user has been validated\n" << user << '\n';
                     
@@ -58,7 +62,7 @@ bool Database::validateUserEntry(const HTTP::UserCredentials& credentials, User*
         }
         // Reset the stream's error state flags
         users.clear();
-        std::cout << "The specified user " << credentials.email << " has NOT been validated.\n";
+        std::cout << "The specified user " << credentials.username << " has NOT been validated.\n";
         return false; 
     }
     else std::cout << "Something with the database went wrong.\n";
@@ -164,6 +168,30 @@ bool Database::findByToken(char token[HEX_LEN], const User* user){
         users.clear();
         std::cout << "The found user " << user->username << " has NOT been found\n";
         return false; 
+    }
+    else std::cout << "Something with the database went wrong.\n";
+    return false; 
+}
+
+bool Database::checkUserForUniqueness(char username[USERNAME_LENGTH_LIMIT]){
+    User user;
+    if(users){
+        users.seekg(0, users.beg);
+        while(users.read((char*)&user, sizeof(User))){
+            
+            if(user.is_deleted) continue;
+            
+            if(compare_strings(user.username, username)){
+                std::cout << "The user has already registered.\n" << &user << '\n';
+                // Reset the stream's error state flags
+                users.clear();
+                return false;
+            }
+        }
+        // Reset the stream's error state flags
+        users.clear();
+        std::cout << "The suggested user " << username << " will be UNIQUE\n";
+        return true; 
     }
     else std::cout << "Something with the database went wrong.\n";
     return false; 

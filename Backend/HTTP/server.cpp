@@ -118,7 +118,7 @@ void send_file(SSL *ssl, const char* file_path, unsigned short status_code, cons
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
     char http_header[512];
-    sprintf(http_header, "HTTP/2.0 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests;\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
+    sprintf(http_header, "HTTP/1.1 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
     std::cout << http_header << '\n';
     if(SSL_write(ssl, http_header, strlen(http_header)) <= 0){
         perror("send: http header");
@@ -133,9 +133,7 @@ void send_file(SSL *ssl, const char* file_path, unsigned short status_code, cons
     
 
 }
-void send_login_page(SSL *ssl) {
-    const char* content_type = "text/html";
-    unsigned short status_code = 302;
+void send_login_page(SSL *ssl, const char* query_parameter = "") {
     const char* file_path = "../Layout/markup/login.html";
     FILE* file = fopen(file_path, "rb");
     if (file == nullptr) {
@@ -149,7 +147,7 @@ void send_login_page(SSL *ssl) {
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
     char http_header[512];
-    sprintf(http_header, "HTTP/2.0 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nLocation: /login\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests;\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
+    sprintf(http_header, "HTTP/1.1 302\r\nServer: Custom/1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: %d\r\nLocation: /login%s\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests\r\nConnection: close\r\n\r\n", size, query_parameter);
     std::cout << http_header << '\n';
     if(SSL_write(ssl, http_header, strlen(http_header)) <= 0){
         perror("send: http header");
@@ -165,17 +163,17 @@ void send_login_page(SSL *ssl) {
 
 }
 
-HTTP::UserCredentials get_form_data(char* request){
+HTTP::UserCredentials get_login_form_data(char* request){
     struct HTTP::UserCredentials credentials;
-    char *email_ptr, *password_ptr;
+    char *username_ptr, *password_ptr;
 
-    // Scan the string buffer for the 'email=' and "password=" strings
-    if(email_ptr = strstr(request, "email=")){
+    // Scan the string buffer for the 'username=' and "password=" strings
+    if(username_ptr = strstr(request, "username=")){
         if(password_ptr = strstr(request, "password=")){
-            email_ptr += 6;
-            for(size_t i = 0; email_ptr < password_ptr-1; email_ptr++, i++)
+            username_ptr += 9;
+            for(size_t i = 0; username_ptr < password_ptr-1; username_ptr++, i++)
             {
-                credentials.email[i] = *email_ptr;
+                credentials.username[i] = *username_ptr;
             }
             char* end = strchr(request, '\0');
             std::cout << end-request << '\n';
@@ -190,6 +188,48 @@ HTTP::UserCredentials get_form_data(char* request){
     return credentials;
 
 }
+
+HTTP::UserCredentials get_reg_form_data(char* request){
+    struct HTTP::UserCredentials credentials;
+    char *username_ptr, *email_ptr, *password_ptr, *repeat_password_ptr;
+
+    // Scan the string buffer for the 'username=' and "password=" strings
+    if(username_ptr = strstr(request, "username=")){
+        if(email_ptr = strstr(username_ptr, "email=")){
+            if(password_ptr = strstr(email_ptr, "password=")){
+                if(repeat_password_ptr = strstr(password_ptr, "repeat_password=")){
+                    username_ptr += 9;
+                   
+                    
+                    for(size_t i = 0; username_ptr < email_ptr-1; username_ptr++, i++)
+                    {
+                        credentials.username[i] = *username_ptr;
+                    }
+                    
+                    email_ptr += 6;
+                    for (size_t i = 0; email_ptr < password_ptr-1; email_ptr++, i++)
+                    {
+                        credentials.email[i] = *email_ptr;
+                    }
+                    password_ptr += 9;
+                    for (size_t i = 0; password_ptr < repeat_password_ptr - 1; password_ptr++, i++)
+                    {
+                        credentials.password[i] = *password_ptr;
+                    }
+                    repeat_password_ptr += 16;
+                    char* end = strchr(repeat_password_ptr, '\0');
+                    for (size_t i = 0; repeat_password_ptr < end; repeat_password_ptr++, i++)
+                    {
+                        credentials.repeat_password[i] = *repeat_password_ptr;
+                    }
+                }
+            }
+        }
+    }
+    return credentials;
+
+}
+
 
 bool compare_token(char* buffer, const char* cookie_token){
     char* access_token_ptr;
@@ -531,7 +571,7 @@ int start(Database& database){
             
             
             if(compare_strings(method, (const char*)"GET")){
-                if(compare_strings(path, (const char*)"/login")){
+                if(strstr(buffer, (const char*)"GET /login")){
                     std::cout << "Sending login.html...\n"; 
                     send_file(ssl, "../Layout/markup/login.html", 200, "text/html");
                 }
@@ -707,9 +747,9 @@ int start(Database& database){
                     send_file(ssl, "../Layout/markup/not_found.html", 404, "text/html");
                 }
             }
-            else if(compare_strings(method, (const char*)"POST")){
-                if(compare_strings(path, (const char*)"/login")){
-                    HTTP::UserCredentials credentials = get_form_data(buffer);
+            else{
+                if(strstr(buffer, (const char*)"POST /login")){
+                    HTTP::UserCredentials credentials = get_login_form_data(buffer);
                     User user;
                     if(database.validateUserEntry(credentials, &user)){
                         // 1. Generate secure random bytes
@@ -720,19 +760,51 @@ int start(Database& database){
                         // 2. Encode to Hex (makes it safe for HTTP cookie headers)
                         bytes_to_hex(raw_token, TOKEN_BYTES, cookie_token);
                         char http_header[150];
-                        int length = sprintf(http_header, "HTTP/2 303\r\nSet-Cookie: access_token=%s; Secure; HttpOnly\r\nLocation: /home\r\n\r\n", cookie_token);
+                        int length = sprintf(http_header, "HTTP/1.1 303\r\nSet-Cookie: access_token=%s; Secure; HttpOnly\r\nLocation: /home\r\n\r\n", cookie_token);
                         database.setCookieToken(&user, cookie_token);
                         SSL_write(ssl, http_header, length);
                     } 
                     else{
                         std::cout << "The CREDENTIALS are INVALID.\n";
+                        send_login_page(ssl, (const char*)"?log_error=invalid_credentials");
                     }
                 }
                 else if(compare_strings(path, (const char*)"/settings")){
                     char http_header[150];
-                    int length = sprintf(http_header, "HTTP/2 303\r\nSet-Cookie: access_token=; Secure; HttpOnly; Max-Age=0\r\nLocation: /login\r\n\r\n");
+                    int length = sprintf(http_header, "HTTP/1.1 303\r\nSet-Cookie: access_token=; Secure; HttpOnly; Max-Age=0\r\nLocation: /login\r\n\r\n");
                     SSL_write(ssl, http_header, length);
                 }
+                else if(strstr(buffer, (const char*)"POST /registration")){
+                    HTTP::UserCredentials credentials = get_reg_form_data(buffer);
+                    
+                    std::cout << credentials.username << ' ' << credentials.email << ' ' << credentials.password << ' ' << credentials.repeat_password << '\n';
+                    if(compare_strings(credentials.password, credentials.repeat_password)){
+                        if(database.checkUserForUniqueness(credentials.username)){
+                            // 1. Generate secure random bytes
+                            if (!generate_random_bytes(raw_token, TOKEN_BYTES)) {
+                                fprintf(stderr, "Error generating secure random bytes.\n");
+                                return 1;
+                            }
+                            // 2. Encode to Hex (makes it safe for HTTP cookie headers)
+                            bytes_to_hex(raw_token, TOKEN_BYTES, cookie_token);
+                            User user(credentials.username, credentials.email, credentials.password, cookie_token);
+                           
+                            if(database.createEntry<User>(user, database.users)){
+                                char http_header[150];
+                                int length = sprintf(http_header, "HTTP/1.1 303\r\nSet-Cookie: access_token=%s; Secure; HttpOnly\r\nLocation: /home\r\n\r\n", cookie_token);
+                                
+                                SSL_write(ssl, http_header, length);
+                            }
+                        }
+                        else{
+                            send_login_page(ssl, (const char*)"?reg_error=username_taken");
+                        }
+                    }
+                    else{
+                        send_login_page(ssl, (const char*)"?reg_error=password_mismatch");
+                    }
+                        
+                } 
         
             }
             SSL_shutdown(ssl);

@@ -47,34 +47,53 @@ button > strong{
     line-height: 1.4;
 }
 
-body, header, main, main > div, form{
-    display: flex;
-}
 body{
+    display: flex;
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    flex-direction: column;
+    flex-flow: row wrap;
     justify-content: center;
+    align-content: center;
     align-items: center;
-    padding: 5%;
-}
-header, main{
-    justify-content: center;
-    align-items: center;
-}
-header{
-    flex-direction: row wrap;
-    gap: 10px;
-    height: 100px;
-    width: 100%;
-}
-main{
-    flex-flow: column;
+    padding: 20px;
     gap: 1em;
+
 }
 
-main > div:first-of-type{
+body > div{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+header{
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 10px;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+}
+header > div{
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+main{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2em;
+}
+main > div{
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.8em;
+}
+
+main div#switch{
     width: 100%;
     display: flex;
     flex-flow: row;
@@ -82,6 +101,7 @@ main > div:first-of-type{
     justify-content: center;
 }
 form{
+    display: flex;
     flex-flow: column;
     gap: 1em;
     width: 100%;
@@ -94,7 +114,7 @@ button, input{
     border-radius: 10px;
     width: 100%;
 }
-main > div:last-of-type{
+main > form#log{
     width: 100%;
 }
 button{
@@ -107,3 +127,7 @@ button{
     background-color: var(--primary-color-sky-reflection);
 }
 
+strong.error{
+    font-size: 2em;
+    color:var(--text-dark-slate-grey)
+}

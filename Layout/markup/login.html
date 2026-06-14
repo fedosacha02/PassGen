@@ -12,35 +12,44 @@
     <script src="../scripts/login.js" defer></script>
 </head>
 <body>
-    <header>
-        <img src="../media/logotype.svg" alt="Logo">
-        <h1>PassGen</h1>
-    </header>
-    <main>
-        <h2>Щойно почнемо!</h2>
-        
-        <div id="switch">
-            <button><strong>Увійти</strong></button>
-            <button class="disabled"><strong>Зареєструватися</strong></button>
-        </div>
+    <div>
+        <header>
+            <div>
+                <a href="/home"><img src="../media/logotype.svg" alt="Logo"></a>
+                <h1>PassGen</h1>
+            </div>
+            <h2>Щойно почнемо!</h2>
+        </header>
+        <main>
+            <div>
+               
+                <div id="switch">
+                    <button><strong>Увійти</strong></button>
+                    <button class="disabled"><strong>Зареєструватися</strong></button>
+                </div>
 
-        <div>
-            <form method="post" action="/login" id="log">
-                <input type="email" name="email" id="email" placeholder="f*****@gmail.com"  autocomplete="on">
-                <input type="password" id="pass" name="password" minlength="8" required placeholder="********" autocomplete="on">
-                <button form="log"><strong>Увійти</strong></button>
-                <h2>Забули пароль?</h2>
-                <button><strong>Скинути</strong></button>
-            </form>
-        </div>
-        
-        <form action="/login" method="post" id="reg" style="display: none;">
-            <input type="email" name="email" id="email" placeholder="f*****@gmail.com" autocomplete="on">
-            <input type="password" id="pass" name="password" minlength="8" required placeholder="********"  autocomplete="on">
-            <input type="password" id="r_pass" name="repeat_password" minlength="8" required placeholder="********" autocomplete="on">
-            <button form="reg"><strong>Зареєструватися</strong></button>
-        </form>
-    </main>
+                
+                <form method="post" action="/login" id="log">
+                    <input type="text" name="username" id="username" required placeholder="Enter a username"  autocomplete="on">
+                    <input type="password" id="pass" name="password" minlength="8" required placeholder="Enter a password" autocomplete="on">
+                    <button form="log"><strong>Увійти</strong></button>
+                    <h2>Забули пароль?</h2>
+                    <button><strong>Скинути</strong></button>
+                </form>
+                                    
+                <form action="/registration" method="post" id="reg" style="display: none;">
+                    <input type="text" name="username" id="username" placeholder="Enter a username" autocomplete="on" required>
+                    <input type="email" name="email" id="email" placeholder="Enter an email" autocomplete="on" required>
+                    <input type="password" id="pass" name="password" minlength="8" required placeholder="Enter a password"  autocomplete="on">
+                    <input type="password" id="r_pass" name="repeat_password" minlength="8" required placeholder="Repeat the password" autocomplete="on">
+                    <button form="reg"><strong>Зареєструватися</strong></button>
+                </form>
+            </div>
+            <strong id="error-msg" class="error"></strong>
+        </main>
+            
+    </div>
+   
 </body>
 
 </html>
