@@ -61,6 +61,12 @@ static void warnx(const char *fmt, ...)
 }
 #endif
 
+
+std::ostream& operator<<(std::ostream& os, const HTTP::UserCredentials& credentials){
+    os << credentials.username << ", " << credentials.email << ", " << credentials.password << ", " << credentials.repeat_password << '\n';
+    return os; // Return the stream for chaining
+}
+
 void sigchld_handler(int s)
 {
     (void)s; // quiet unused variable warning
@@ -118,6 +124,7 @@ void send_file(SSL *ssl, const char* file_path, unsigned short status_code, cons
     char buffer[BUFFER_SIZE];
     size_t bytes_read;
     char http_header[512];
+    const char* reset_cookie = (const char*)"Set-Cookie: reg_error1=; Max-Age=0\r\nSet-Cookie: reg_error2=; Max-Age=0\r\nSet-Cookie: log_error=; Max-Age=0\r\n";
     sprintf(http_header, "HTTP/1.1 %d\r\nServer: Custom/1.0\r\nContent-Type: %s; charset=UTF-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests\r\nConnection: close\r\n\r\n", (int)status_code, content_type, size);
     std::cout << http_header << '\n';
     if(SSL_write(ssl, http_header, strlen(http_header)) <= 0){
@@ -133,7 +140,7 @@ void send_file(SSL *ssl, const char* file_path, unsigned short status_code, cons
     
 
 }
-void send_login_page(SSL *ssl, const char* query_parameter = "") {
+void send_login_page(SSL *ssl, const char* error_cookie = "") {
     const char* file_path = "../Layout/markup/login.html";
     FILE* file = fopen(file_path, "rb");
     if (file == nullptr) {
@@ -144,20 +151,18 @@ void send_login_page(SSL *ssl, const char* query_parameter = "") {
     struct stat st;
     stat(file_path, &st);
     int size = st.st_size;
-    char buffer[BUFFER_SIZE];
-    size_t bytes_read;
+    char buffer[size];
     char http_header[512];
-    sprintf(http_header, "HTTP/1.1 302\r\nServer: Custom/1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: %d\r\nLocation: /login%s\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests\r\nConnection: close\r\n\r\n", size, query_parameter);
+    sprintf(http_header, "HTTP/1.1 303\r\nServer: Custom/1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: %d\r\nLocation: /login\r\n%s\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests\r\nConnection: close\r\n\r\n", size, error_cookie);
     std::cout << http_header << '\n';
     if(SSL_write(ssl, http_header, strlen(http_header)) <= 0){
         perror("send: http header");
     }
-
-    while((bytes_read = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
-        if(SSL_write(ssl, buffer, bytes_read) <= 0) perror("send: file content");
+    if(fread(buffer, 1, size, file) == size) {
+        if(SSL_write(ssl, buffer, size) <= 0) perror("send: file content");
     }
-    std::cout << "The file located at " << file_path << " was successfully sended.\n"; 
-    
+    else perror("file: read content");
+
     fclose(file);
     
 
@@ -175,7 +180,7 @@ HTTP::UserCredentials get_login_form_data(char* request){
             {
                 credentials.username[i] = *username_ptr;
             }
-            char* end = strchr(request, '\0');
+            char* end = strchr(username_ptr, '\0');
             std::cout << end-request << '\n';
             password_ptr += 9;
             for (size_t i = 0; password_ptr < end; password_ptr++, i++)
@@ -195,17 +200,16 @@ HTTP::UserCredentials get_reg_form_data(char* request){
 
     // Scan the string buffer for the 'username=' and "password=" strings
     if(username_ptr = strstr(request, "username=")){
+      
         if(email_ptr = strstr(username_ptr, "email=")){
             if(password_ptr = strstr(email_ptr, "password=")){
                 if(repeat_password_ptr = strstr(password_ptr, "repeat_password=")){
                     username_ptr += 9;
                    
-                    
                     for(size_t i = 0; username_ptr < email_ptr-1; username_ptr++, i++)
                     {
                         credentials.username[i] = *username_ptr;
                     }
-                    
                     email_ptr += 6;
                     for (size_t i = 0; email_ptr < password_ptr-1; email_ptr++, i++)
                     {
@@ -571,7 +575,7 @@ int start(Database& database){
             
             
             if(compare_strings(method, (const char*)"GET")){
-                if(strstr(buffer, (const char*)"GET /login")){
+                if(compare_strings(path, (const char*)"/login")){
                     std::cout << "Sending login.html...\n"; 
                     send_file(ssl, "../Layout/markup/login.html", 200, "text/html");
                 }
@@ -747,8 +751,8 @@ int start(Database& database){
                     send_file(ssl, "../Layout/markup/not_found.html", 404, "text/html");
                 }
             }
-            else{
-                if(strstr(buffer, (const char*)"POST /login")){
+            else if(compare_strings(method, (const char*)"POST")){
+                if(compare_strings(path, (const char*)"/login")){
                     HTTP::UserCredentials credentials = get_login_form_data(buffer);
                     User user;
                     if(database.validateUserEntry(credentials, &user)){
@@ -766,7 +770,7 @@ int start(Database& database){
                     } 
                     else{
                         std::cout << "The CREDENTIALS are INVALID.\n";
-                        send_login_page(ssl, (const char*)"?log_error=invalid_credentials");
+                        send_login_page(ssl, "Set-Cookie: reg_error1=; Max-Age=0\r\nSet-Cookie: reg_error2=; Max-Age=0\r\nSet-Cookie: log_error=invalid_credentials; Max-Age=300");
                     }
                 }
                 else if(compare_strings(path, (const char*)"/settings")){
@@ -774,12 +778,15 @@ int start(Database& database){
                     int length = sprintf(http_header, "HTTP/1.1 303\r\nSet-Cookie: access_token=; Secure; HttpOnly; Max-Age=0\r\nLocation: /login\r\n\r\n");
                     SSL_write(ssl, http_header, length);
                 }
-                else if(strstr(buffer, (const char*)"POST /registration")){
+                else if(compare_strings(path, (const char*)"/registration")){
                     HTTP::UserCredentials credentials = get_reg_form_data(buffer);
                     
                     std::cout << credentials.username << ' ' << credentials.email << ' ' << credentials.password << ' ' << credentials.repeat_password << '\n';
-                    if(compare_strings(credentials.password, credentials.repeat_password)){
-                        if(database.checkUserForUniqueness(credentials.username)){
+                    bool is_passwords_equal = compare_strings(credentials.password, credentials.repeat_password);
+                    bool is_username_unique = database.checkUserForUniqueness(credentials.username);
+
+                    if(is_passwords_equal){
+                        if(is_username_unique){
                             // 1. Generate secure random bytes
                             if (!generate_random_bytes(raw_token, TOKEN_BYTES)) {
                                 fprintf(stderr, "Error generating secure random bytes.\n");
@@ -796,12 +803,11 @@ int start(Database& database){
                                 SSL_write(ssl, http_header, length);
                             }
                         }
-                        else{
-                            send_login_page(ssl, (const char*)"?reg_error=username_taken");
-                        }
+                        else send_login_page(ssl, "Set-Cookie: log_error=; Max-Age=0\r\nSet-Cookie: reg_error1=username_taken; Max-Age=300\r\nSet-Cookie: reg_error2=; Max-Age=0");
                     }
                     else{
-                        send_login_page(ssl, (const char*)"?reg_error=password_mismatch");
+                        if(is_username_unique) send_login_page(ssl, "Set-Cookie: log_error=; Max-Age=0\r\nSet-Cookie: reg_error2=; Max-Age=0\r\nSet-Cookie: reg_error1=passwords_mismatch; Max-Age=300");
+                        else send_login_page(ssl, "Set-Cookie: log_error=; Max-Age=0\r\nSet-Cookie: reg_error1=passwords_mismatch; Max-Age=300\r\nSet-Cookie: reg_error2=username_taken; Max-Age=300");
                     }
                         
                 } 

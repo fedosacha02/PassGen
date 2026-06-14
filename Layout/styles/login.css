@@ -82,7 +82,7 @@ header > div{
 }
 main{
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: row nowrap;
     justify-content: center;
     align-items: center;
     gap: 2em;
@@ -129,5 +129,6 @@ button{
 
 strong.error{
     font-size: 2em;
-    color:var(--text-dark-slate-grey)
+    color:var(--text-dark-slate-grey);
+    white-space: pre-line;
 }

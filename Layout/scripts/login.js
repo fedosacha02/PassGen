@@ -1,11 +1,21 @@
 const buttons = document.querySelectorAll("main div#switch > button");
 const forms = document.querySelectorAll("main form");
 const error_message = document.getElementById('error-msg');
-const params = new URLSearchParams(window.location.search);
-const reg_error = params.get('reg_error');
-const log_error = params.get('log_error');
+const h2 = document.querySelector("header > h2");
 
 
+
+console.log(document.cookie);
+
+forms.forEach(
+    (x) => {
+        addEventListener("submit", () => {
+        document.cookie = "reg1_error=; Max-Age=0";
+        document.cookie = "reg2_error=; Max-Age=0";
+        document.cookie = "log_error=; Max-Age=0";
+        })
+    }
+);
 
 buttons[0].addEventListener("click", (event) => {
     buttons[0].classList.remove("disabled");
@@ -13,8 +23,10 @@ buttons[0].addEventListener("click", (event) => {
     forms[0].style.display = "flex";
     forms[1].style.display = "none";
     error_message.textContent = "";
-    params.delete("reg_error");
-    window.history.replaceState({}, document.title, "/login"); //if you don't want to reload
+    document.cookie = "reg1_error=; Max-Age=0";
+    document.cookie = "reg2_error=; Max-Age=0";
+    document.cookie = "log_error=; Max-Age=0";
+    h2.style.display = "block";
 });
 
 buttons[1].addEventListener("click", (event) => {
@@ -23,32 +35,39 @@ buttons[1].addEventListener("click", (event) => {
     forms[0].style.display = "none";
     forms[1].style.display = "flex";
     error_message.textContent = "";
-    params.delete("log_error");
-    window.history.replaceState({}, document.title, "/login"); //if you don't want to reload
+    document.cookie = "reg1_error=; Max-Age=0";
+    document.cookie = "reg2_error=; Max-Age=0";
+    document.cookie = "log_error=; Max-Age=0";
+    h2.style.display = "block";
 });
 
 
 
-const reg_messages = {
-    username_taken:    'That username is already taken.',
-    password_mismatch: 'Passwords do not match.',
+const errors = {
+    username_taken: 'That username is already taken. Please, choose another\n',
+    passwords_mismatch: 'Passwords do not match. Please, check the spelling\n',
+    invalid_credentials: 'The username or password is invalid.\n'
 };
 
-const log_messages = {
-    invalid_credentials: 'The username or password is invalid.'
-}
 
-if (reg_error && reg_messages[reg_error]) {
-    buttons[1].classList.remove("disabled");
-    buttons[0].classList.add("disabled");
-    forms[0].style.display = "none";
-    forms[1].style.display = "flex";
-    error_message.textContent = reg_messages[reg_error];
-}
-else if(log_error && log_messages[log_error]){
-    buttons[0].classList.remove("disabled");
-    buttons[1].classList.add("disabled");
-    forms[1].style.display = "none";
-    forms[0].style.display = "flex";
-    error_message.textContent = log_messages[log_error];
+
+if(document.cookie){
+    h2.style.display = "none";
+    document.cookie.split("; ").map((x) => x.split('=')).forEach(
+        (x) => {
+            if(x[0].startsWith("reg")){
+                buttons[1].classList.remove("disabled");
+                buttons[0].classList.add("disabled");
+                forms[0].style.display = "none";
+                forms[1].style.display = "flex";
+            }
+            else{
+                buttons[0].classList.remove("disabled");
+                buttons[1].classList.add("disabled");
+                forms[0].style.display = "flex";
+                forms[1].style.display = "none";
+            }
+            error_message.textContent += errors[x[1]]
+        }
+    );
 }
