@@ -2,7 +2,13 @@
 
 #include "../config.hpp"
 #include "../Password/password.hpp"
-#include "../Database/database.hpp"
+
+#include "../HTTP/server.hpp"
+#include <openssl/ssl.h>
+
+class Database;
+
+
 
 class User{
     private:
@@ -74,11 +80,12 @@ class User{
         
         // Overloading of << operator function
         friend std::ostream& operator<<(std::ostream& os, const User* user);
+        friend void send_settings(SSL* ssl, const User& user);
+        
+
         bool isReal();
         bool confirmMasterPassword(char password[PASSWORD_LENGTH_LIMIT]);
 
         static void setCount(Database& db);
-};
-
-
+};  
 

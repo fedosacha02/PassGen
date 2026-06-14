@@ -7,6 +7,7 @@
     <title>Settings</title>
     <link rel="stylesheet" href="../styles/settings.css">
     <link rel="icon" type="image/x-icon" href="../media/favicon.ico">
+   
 </head>
 <body>
     <header>
@@ -37,14 +38,14 @@
                 <li id="current"><a href="/settings">Settings</a></li>
             </ul>
         </nav>
-        <div></div>
+        <div id="point"></div>
         <ul>
             <li><h2>Електронна пошта</h2></li>
-            <li><h3>fedosacha02@gmail.com</h3></li>
+            <li><h3>{{email}}</h3></li>
             <li><h2>Обліковий пароль</h2></li>
-            <li><h3>nigde1234#</h3></li>
+            <li><h3>{{master_password}}</h3></li>
             <li><h2>План</h2></li>
-            <li><h2>Free</h2></li>
+            <li><h2>{{plan}}</h2></li>
         </ul>
     </main>
     <footer>
@@ -53,5 +54,14 @@
         </form>
         </button>
     </footer>
+     <script>
+        const credentials = document.querySelectorAll("main > ul > li:nth-child(even)");
+        credentials.forEach(
+            (x) => x.addEventListener("click", ()=>{
+                x.style.filter = "none";
+                x.style.userSelect = "all";
+            })
+        );
+    </script>
 </body>
 </html>

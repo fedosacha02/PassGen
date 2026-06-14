@@ -6,6 +6,7 @@
 #include "../User/user.hpp"
 #include "../Functions/functions.cpp"
 
+
 // Opening the database schema
 Database::Database():  
     users("Data/users.bin", std::ios::in | std::ios::out | std::ios::binary), 

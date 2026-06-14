@@ -111,10 +111,10 @@ main > ul > li:nth-child(even){
     filter: blur(6px);
     user-select: none; /* Prevents copying to read it */
 }
-main > ul > li:nth-child(even):active{
+/*main > ul > li:nth-child(even):focus, main > ul > li:nth-child(even):active{
     filter: none;
     user-select: all;
-}
+}*/
 footer{
     width: 100%;
     padding: 50px;

@@ -12,8 +12,7 @@
 #include "../config.hpp"
 #include <string.h>
 #include "../Functions/functions.cpp" // compare_strings
-#include "server.hpp"
-#include "../Database/database.cpp"
+
 
 /* Include the appropriate header file for SOCK_STREAM */
 #ifdef _WIN32 /* Windows */
@@ -28,6 +27,10 @@
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+
+#include "server.hpp"
+#include "../Database/database.hpp"
+#include "../User/user.cpp"
 
 static const char cache_id[] = "OpenSSL Demo Server";
 
@@ -167,6 +170,95 @@ void send_login_page(SSL *ssl, const char* error_cookie = "") {
     
 
 }
+
+char* serve_file(const char* path){
+    FILE* file = fopen(path, "rb");
+
+    if (file == nullptr) {
+        perror("Error opening the file.");
+        return nullptr;
+    }
+    
+    // Get a file size by means of reading metadata
+    struct stat st;
+    stat(path, &st);
+    int size = st.st_size;
+    
+    // Allocate memory
+    char* buffer = (char *)malloc(size + 1);
+
+    if (!buffer) {
+        perror("Memory error");
+        fclose(file);
+        return nullptr;
+    }
+    
+    if(fread(buffer, 1, size, file) < size) {
+        perror("file: reading content");
+        free(buffer);
+        fclose(file);
+        return nullptr;
+    }
+    // Null-terminate
+    buffer[size] = '\0';
+    fclose(file);
+
+    return buffer;
+}
+
+char* replace_placeholders(char* result, const char** keys, 
+                          const char** values, int num_pairs) {
+    for (int i = 0; i < num_pairs; i++) {
+
+        // 1. Create placeholder string (e.g., "{{user}}")
+        char placeholder[64];
+        snprintf(placeholder, sizeof(placeholder), "{{%s}}", keys[i]);
+
+        char* pos;
+        // 2. Find all occurrences of the placeholder
+        while ((pos = strstr(result, placeholder)) != NULL) {
+            // Calculate segment lengths
+            size_t before_len = pos - result;
+            size_t placeholder_len = strlen(placeholder);
+            size_t value_len = strlen(values[i]);
+
+            // 3. Allocate new memory for modified string
+            char* new_result = (char *)malloc(before_len + value_len + 
+                                    strlen(pos + placeholder_len) + 1);
+            
+            // 4. Build new string:
+            // a) Copy part before placeholder
+            strncpy(new_result, result, before_len);
+            // b) Insert value
+            strcpy(new_result + before_len, values[i]);
+            // c) Copy remaining content after placeholder
+            strcpy(new_result + before_len + value_len, pos + placeholder_len);
+
+            // 5. Replace old string with new version
+            free(result);
+            result = new_result;
+        }
+    }
+    
+    return result;
+   
+}
+
+void send_settings(SSL* ssl, const User& user){
+    char* buffer = serve_file("../Layout/markup/settings.html");
+    
+    const char* keys[]  = {"email", "master_password", "plan"};
+    const char* values[] = {user.email, user.master_password, (((int)user.plan == 0)? "Free": ((int)user.plan == 1)? "Basic": "Premium")};
+    buffer = replace_placeholders(buffer, keys, values, 3);
+
+    char http_header[512];
+    int size = strlen(buffer);
+    sprintf(http_header, "HTTP/1.1 200\r\nServer: Custom/1.0\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nContent-Security-Policy: upgrade-insecure-requests\r\nConnection: close\r\n\r\n", size);
+
+    if(SSL_write(ssl, http_header, strlen(http_header)) <= 0) perror("send: http header");
+    if(SSL_write(ssl, buffer, size) <= 0) perror("send: file content");
+}
+
 
 HTTP::UserCredentials get_login_form_data(char* request){
     struct HTTP::UserCredentials credentials;
@@ -649,7 +741,7 @@ int start(Database& database){
                     if(get_cookie_token(buffer, token)){
                         if(database.findByToken(token, &user)){
                             std::cout << "Sending /settings...\n"; 
-                            send_file(ssl, "../Layout/markup/settings.html", 200, "text/html");
+                            send_settings(ssl, user);
                         }
                         else{
                             std::cout << "TOKEN is INVALID. Sending /login...\n";
