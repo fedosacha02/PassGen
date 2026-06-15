@@ -49,7 +49,7 @@ bool Database::validateUserEntry(const HTTP::UserCredentials& credentials, User*
 
         while (users.read((char*)user, sizeof(User))){
             if(user->is_deleted) continue;
-            std::cout << user->username << '\n';
+            std::cout << credentials.password << '\n';
             if(compare_strings(user->username, credentials.username)){
                 if(compare_strings(user->master_password, credentials.password)){
                     std::cout << "The user has been validated\n" << user << '\n';

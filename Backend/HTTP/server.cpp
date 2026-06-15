@@ -1,16 +1,16 @@
 #pragma once
 
 #include <iostream>
-#include <sys/types.h>
-#include <netdb.h>
-#include <arpa/inet.h> // Definitions for internet operations: inet_pton(), inet_ntop()
-#include <unistd.h>     // For close()
-#include <cstring>
-#include <sys/wait.h>
-#include <signal.h>
+
+
+/*#include <arpa/inet.h> // Definitions for internet operations: inet_pton(), inet_ntop()
+#include <unistd.h>     // For close()*/
+//#include <cstring>
+
+
 #include <sys/stat.h> // get a file size
 #include "../config.hpp"
-#include <string.h>
+//#include <string.h>
 #include "../Functions/functions.cpp" // compare_strings
 
 
@@ -21,7 +21,7 @@
 #else /* Linux/Unix */
 #include <err.h>
 #include <sys/socket.h> // Core socket functions: socket(), bind(), connect(), accept()
-#include <sys/select.h>
+
 #endif
 
 #include <openssl/bio.h>
@@ -70,28 +70,6 @@ std::ostream& operator<<(std::ostream& os, const HTTP::UserCredentials& credenti
     return os; // Return the stream for chaining
 }
 
-void sigchld_handler(int s)
-{
-    (void)s; // quiet unused variable warning
-
-    // waitpid() might overwrite errno, so we save and restore it:
-    int saved_errno = errno;
-
-    while(waitpid(-1, NULL, WNOHANG) > 0);
-
-    errno = saved_errno;
-}
-
-
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
 
 // Generates cryptographically secure random bytes
 int generate_random_bytes(unsigned char *buffer, size_t size) {
@@ -354,21 +332,6 @@ bool get_cookie_token(char* buffer, char result[HEX_LEN]){
     return false;
 }
 
-void add_authorised_route(const char path[20], char* buffer, char cookie_token[HEX_LEN], SSL* ssl){
-    if(compare_strings(path, path)){
-        std::cout << "INCOMING TOKEN: " << cookie_token << '\n';
-        if (compare_token(buffer, cookie_token)){
-            std::cout << "Sending " << path << "...\n";
-            char file_path[50];
-            sprintf(file_path, "../Layout/markup%s.html", path);
-            send_file(ssl, file_path, 200, "text/html");
-        }
-        else{
-            std::cout << "TOKEN is empty or invalid. Sending /login...\n";
-            send_file(ssl, "../Layout/markup/login.html", 401, "text/html");
-        }
-    }
-}
 
 int get_http_info(char* output, const char* buffer, int displacement = 0){
     char a = buffer[displacement];
