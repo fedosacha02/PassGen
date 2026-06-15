@@ -239,24 +239,26 @@ void send_settings(SSL* ssl, const User& user){
 
 
 HTTP::UserCredentials get_login_form_data(char* request){
-    struct HTTP::UserCredentials credentials;
+    struct HTTP::UserCredentials credentials = {};
     char *username_ptr, *password_ptr;
 
     // Scan the string buffer for the 'username=' and "password=" strings
-    if(username_ptr = strstr(request, "username=")){
-        if(password_ptr = strstr(request, "password=")){
-            username_ptr += 9;
-            for(size_t i = 0; username_ptr < password_ptr-1; username_ptr++, i++)
+    if(username_ptr = strstr(request, "\r\nusername=")){
+        if(password_ptr = strstr(request, "&password=")){
+            username_ptr += 11;
+            size_t i;
+            for(i = 0; username_ptr < password_ptr; username_ptr++, i++)
             {
                 credentials.username[i] = *username_ptr;
             }
+            credentials.username[i] = '\0';
             char* end = strchr(username_ptr, '\0');
-            std::cout << end-request << '\n';
-            password_ptr += 9;
-            for (size_t i = 0; password_ptr < end; password_ptr++, i++)
+            password_ptr += 10;
+            for (i = 0; password_ptr < end; password_ptr++, i++)
             {
                 credentials.password[i] = *password_ptr;
             }
+            credentials.password[i] = '\0';
         }
     }
     
@@ -265,37 +267,41 @@ HTTP::UserCredentials get_login_form_data(char* request){
 }
 
 HTTP::UserCredentials get_reg_form_data(char* request){
-    struct HTTP::UserCredentials credentials;
+    struct HTTP::UserCredentials credentials = {};
     char *username_ptr, *email_ptr, *password_ptr, *repeat_password_ptr;
 
     // Scan the string buffer for the 'username=' and "password=" strings
-    if(username_ptr = strstr(request, "username=")){
+    if(username_ptr = strstr(request, "\r\nusername=")){
       
-        if(email_ptr = strstr(username_ptr, "email=")){
-            if(password_ptr = strstr(email_ptr, "password=")){
-                if(repeat_password_ptr = strstr(password_ptr, "repeat_password=")){
-                    username_ptr += 9;
-                   
-                    for(size_t i = 0; username_ptr < email_ptr-1; username_ptr++, i++)
+        if(email_ptr = strstr(username_ptr, "&email=")){
+            if(password_ptr = strstr(email_ptr, "&password=")){
+                if(repeat_password_ptr = strstr(password_ptr, "&repeat_password=")){
+                    username_ptr += 11;
+                    size_t i;
+                    for(i = 0; username_ptr < email_ptr; username_ptr++, i++)
                     {
                         credentials.username[i] = *username_ptr;
                     }
-                    email_ptr += 6;
-                    for (size_t i = 0; email_ptr < password_ptr-1; email_ptr++, i++)
+                    credentials.username[i] = '\0';
+                    email_ptr += 7;
+                    for (i = 0; email_ptr < password_ptr; email_ptr++, i++)
                     {
                         credentials.email[i] = *email_ptr;
                     }
-                    password_ptr += 9;
-                    for (size_t i = 0; password_ptr < repeat_password_ptr - 1; password_ptr++, i++)
+                    password_ptr += 10;
+                    credentials.email[i] = '\0';
+                    for (i = 0; password_ptr < repeat_password_ptr; password_ptr++, i++)
                     {
                         credentials.password[i] = *password_ptr;
                     }
-                    repeat_password_ptr += 16;
+                    repeat_password_ptr += 17;
+                    credentials.password[i] = '\0';
                     char* end = strchr(repeat_password_ptr, '\0');
-                    for (size_t i = 0; repeat_password_ptr < end; repeat_password_ptr++, i++)
+                    for (i = 0; repeat_password_ptr < end; repeat_password_ptr++, i++)
                     {
                         credentials.repeat_password[i] = *repeat_password_ptr;
                     }
+                    credentials.repeat_password[i] = '\0';
                 }
             }
         }

@@ -9,10 +9,10 @@ console.log(document.cookie);
 
 forms.forEach(
     (x) => {
-        addEventListener("submit", () => {
-        document.cookie = "reg1_error=; Max-Age=0";
-        document.cookie = "reg2_error=; Max-Age=0";
-        document.cookie = "log_error=; Max-Age=0";
+        x.addEventListener("submit", () => {
+            document.cookie = "reg_error1=; Max-Age=0";
+            document.cookie = "reg_error2=; Max-Age=0";
+            document.cookie = "log_error=; Max-Age=0";
         })
     }
 );
